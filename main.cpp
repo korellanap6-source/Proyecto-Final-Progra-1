@@ -15,11 +15,61 @@
 void marco(int,int,int,int);
 void gotoxy(int x, int y);
 bool AjustarVentana_menu(int Ancho, int Alto); 
+void menuTrabajador();
+void menuAdmin();
 
 using namespace std;
 
 int main (){
+    	
+}
 
+void menuTrabador(){
+    AjustarVentana_menu(55, 20); 
+    system("cls"); 
+    marco(3, 3, 52, 17);
+    system("color 0A"); // Color verde para trabajador
+
+    gotoxy(15, 5); cout << "PANEL DE TRABAJADOR";
+    gotoxy(10, 7); cout << "-------------------------------";
+    gotoxy(10, 9); cout << "[1] Registrar medida del dia";
+    gotoxy(10, 11); cout << "[2] Cerrar Sesion";
+
+    char op;
+    do{
+        op=getch();
+        if(op == '1'){
+            gotoxy(10, 14); cout << "Abriendo modulo de registro...  ";
+            Sleep(1000);
+            break;
+        }
+    }while(op != '2');
+}
+
+void menuAdmin(){
+    AjustarVentana_menu(60, 25); 
+    system("cls"); 
+    marco(3, 3, 56, 22);
+    system("color 0E"); // Color amarillo para admin
+
+    gotoxy(18, 5); cout << "PANEL DE ADMINISTRADOR";
+    gotoxy(12, 7); cout << "---------------------------------";
+    gotoxy(12, 9); cout << "[1] Registrar nueva medida";
+    gotoxy(12, 10); cout << "[2] Buscar medida por fecha";
+    gotoxy(12, 11); cout << "[3] Ver historial de medidas";
+    gotoxy(12, 12); cout << "[4] Modificar un registro";
+    gotoxy(12, 13); cout << "[5] Eliminar un registro";
+    gotoxy(12, 15); cout << "[6] Cerrar Sesion";
+
+    char op;
+    do{
+        op = getch();
+        if(op >='1' && op<='5'){
+            gotoxy(12, 18); cout << "Opcion " << op << " seleccionada...     ";
+            Sleep(1000);
+            break;
+        }
+    }while(op != '6');
 }
 
 // Funcion gotoxy 
