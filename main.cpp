@@ -63,10 +63,50 @@ bool realizarLogin(string rolEsperado) {
 
 
 int main (){
-    	
+    char opcion;
+
+    do{
+        AjustarVentana_menu(50, 20); 	
+        system("cls"); 									
+        marco(3, 3, 46, 17);							
+        system("color 0B"); 			
+        
+        gotoxy(12, 5); cout << "SISTEMA DE INVENTARIO - DIESEL";
+        gotoxy(21, 7); cout << "LOGIN";
+        gotoxy(12, 8); cout << "--------------------------";
+        gotoxy(10, 10); cout << "[1] Ingresar como Trabajador";
+        gotoxy(10, 11); cout << "[2] Ingresar como Administrador";
+        gotoxy(10, 13); cout << "[3] Salir del Sistema";
+        gotoxy(10, 15); cout << "Seleccione su rol: ";
+
+        opcion = getch();
+
+        switch (opcion) {
+            case '1':
+                if (realizarLogin("TRABAJADOR")){
+                    menuTrabajador();
+                }else {
+                    gotoxy(12, 17); cout << "Error: Datos incorrectos.";
+                    Sleep(1500);
+                }
+                break;
+            case '2':
+                if (realizarLogin("ADMIN")){
+                    menuAdmin();
+                }else {
+                    gotoxy(12, 17); cout << "Error: Datos incorrectos.";
+                    Sleep(1500);
+                }
+                break;
+            case '3':
+                exit(0);
+                break;
+        }
+    }while(true);
+    return 0;
 }
 
-void menuTrabador(){
+void menuTrabajador(){
     AjustarVentana_menu(55, 20); 
     system("cls"); 
     marco(3, 3, 52, 17);
