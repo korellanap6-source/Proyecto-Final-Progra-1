@@ -2,6 +2,7 @@
 #include <stdlib.h>	
 #include <conio.h> 
 #include <windows.h> 
+#include <string>
 
 // Definiciones para el marco
 #define arrizq 219				
@@ -19,6 +20,47 @@ void menuTrabajador();
 void menuAdmin();
 
 using namespace std;
+
+// --- CAPA DE DATOS (POO) ---
+class Usuario {
+private:
+    string username;
+    string password;
+public:
+    // Constructor
+    Usuario(string u, string p) : username(u), password(p) {}
+    
+    // Método para validar
+    bool validar(string u, string p) {
+        return (username == u && password == p);
+    }
+};
+
+bool realizarLogin(string rolEsperado) {
+    string userIn, passIn;
+    
+    AjustarVentana_menu(50, 20);
+    system("cls");
+    marco(5, 5, 44, 15);
+    
+    gotoxy(15, 6); cout << "LOGIN: " << rolEsperado;
+    
+    gotoxy(10, 8);  cout << "Usuario: "; 
+    cin >> userIn;
+    
+    gotoxy(10, 10); cout << "Password: ";
+    cin >> passIn; 
+
+    
+    if (rolEsperado == "ADMIN") {
+        Usuario admin("admin", "1234");
+        return admin.validar(userIn, passIn);
+    } else {
+        Usuario trab("gas", "5678");
+        return trab.validar(userIn, passIn);
+    }
+}
+
 
 int main (){
     	
