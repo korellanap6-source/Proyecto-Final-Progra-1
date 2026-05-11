@@ -42,7 +42,7 @@ int main (){
         Interfaz::marco(3, 3, 46, 17);							
         system("color 0B"); 			
         
-        Interfaz::gotoxy(6, 5); cout << "SISTEMA DE MEDICION DE TANQUES - DIESEL";
+        Interfaz::gotoxy(6, 5); cout << "SISTEMA DE MEDICION DE TANQUES -";
         Interfaz::gotoxy(21, 7); cout << "LOGIN";
         Interfaz::gotoxy(12, 8); cout << "--------------------------";
         Interfaz::gotoxy(10, 10); cout << "[1] Ingresar como Trabajador";
