@@ -18,6 +18,8 @@ def abrir_ventana_empleado():
     ventana_emp = ctk.CTkToplevel()
     ventana_emp.geometry("800x500")
     ventana_emp.title("Panel de Empleado")
+
+    ventana_emp.protocol("WM_DELETE_WINDOW", cerrar_programa)
     
     
     ctk.CTkLabel(ventana_emp, text="👤 Empleado", font=("Arial", 20, "bold")).pack(pady=10)
@@ -40,6 +42,8 @@ def abrir_ventana_admin():
     ventana_admin = ctk.CTkToplevel()
     ventana_admin.geometry("800x500")
     ventana_admin.title("Panel de Administrador")
+
+    ventana_admin.protocol("WM_DELETE_WINDOW",cerrar_programa)
     
     ctk.CTkLabel(ventana_admin, text="⚙️ ADMINISTRADOR", font=("Arial", 20, "bold")).pack(pady=10)
     
@@ -50,8 +54,13 @@ def abrir_ventana_admin():
     tabs.add("Añadir")
     tabs.add("Historial")
     tabs.add("Buscar")
+    tabs.add("actualizar")
     tabs.add("Eliminar")
 
+#funcion para finalizar el programa
+def cerrar_programa():
+    ventana.quit()
+    ventana.destroy()
 
 def intentar_login():
     
