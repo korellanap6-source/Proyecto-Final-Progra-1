@@ -7,5 +7,4 @@ class usuario:
     
     # Método para validar
     def validar(self, u, p):
-        # ¡La palabra 'return' aquí es obligatoria!
         return (self.username == u and self.password == p)

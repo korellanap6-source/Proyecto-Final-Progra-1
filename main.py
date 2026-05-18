@@ -12,7 +12,7 @@ ventana.title("Sistema de Medición de Tanques")
 
 
 def abrir_ventana_empleado():
-    ventana.withdraw() # Oculta la ventana de login
+    ventana.withdraw() 
     
     
     ventana_emp = ctk.CTkToplevel()
@@ -54,14 +54,12 @@ def abrir_ventana_admin():
 
 
 def intentar_login():
-    # El .strip() es la clave: borra espacios en blanco al inicio o al final
+    
     u = entrada_usuario.get().strip()
     p = entrada_password.get().strip()
     
-    # Esto te chismorreará en la consola qué está leyendo exactamente Python
     print(f"Intentando entrar con -> Usuario: '{u}' | Password: '{p}'")
     
-    # Crear los usuarios de prueba (U mayúscula)
     usuario_admin = usuario("admin", "1234")
     usuario_trab = usuario("gas", "5678")
     
@@ -73,7 +71,6 @@ def intentar_login():
         mensaje_error.configure(text="")
         abrir_ventana_empleado()
     else:
-        # Si falla mostramos el error en rojo
         mensaje_error.configure(text="Error: Usuario o contraseña incorrectos")
 
 #titulo principal 
