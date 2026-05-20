@@ -10,28 +10,8 @@ ventana = ctk.CTk()
 ventana.geometry("400x350")#ancho y alto
 ventana.title("Sistema de Medición de Tanques")
 
-
-def abrir_ventana_empleado():
-    ventana.withdraw() 
-    
-    ventana_emp = ctk.CTkToplevel()
-    ventana_emp.geometry("800x500")
-    ventana_emp.title("Panel de Empleado")
-
-    ventana_emp.protocol("WM_DELETE_WINDOW", cerrar_programa) 
-    
-    ctk.CTkLabel(ventana_emp, text="👤 Empleado", font=("Arial", 20, "bold")).pack(pady=10)
-    
-    tabs = ctk.CTkTabview(ventana_emp, width=750, height=400)
-    tabs.pack(pady=10)
-    
-    tabs.add("INGRESAR MEDIDA")
-    tabs.add("VER HISTORIAL")
-    
-    #INTERFAZ DE INGRESO DE MEDIDAS
-    pestana_ingreso = tabs.tab("INGRESAR MEDIDA")
-    
-    # encabezados de columnas
+def menu_ingresar_medidas(pestana_ingreso): 
+     # encabezados de columnas
     ctk.CTkLabel(pestana_ingreso, text="Combustible", font=("Arial", 14, "bold")).grid(row=0, column=0, padx=20, pady=10)
     ctk.CTkLabel(pestana_ingreso, text="Pulgadas (PULG)", font=("Arial", 14, "bold")).grid(row=0, column=1, padx=20, pady=10)
     ctk.CTkLabel(pestana_ingreso, text="Galones (GLS)", font=("arial", 14, "bold")).grid(row=0, column=2, padx=20, pady=10)
@@ -51,8 +31,8 @@ def abrir_ventana_empleado():
     
     # FILA REGULAR
     ctk.CTkLabel(pestana_ingreso, text="⛽ REGULAR:", font=("Arial", 14)).grid(row=2, column=0, padx=20, pady=10, sticky="w")
-    entrada_regular = ctk.CTkEntry(pestana_ingreso, placeholder_text="0", width=100)
-    entrada_regular.grid(row=2, column=1, padx=20, pady=10)
+    entrada_regular_pulg = ctk.CTkEntry(pestana_ingreso, placeholder_text="0", width=100)
+    entrada_regular_pulg.grid(row=2, column=1, padx=20, pady=10)
     
     
     entrada_regular_gls = ctk.CTkEntry(pestana_ingreso, placeholder_text="0", width=100, state="readonly")
@@ -62,8 +42,8 @@ def abrir_ventana_empleado():
 
     # FILA SÚPER
     ctk.CTkLabel(pestana_ingreso, text="⛽ SÚPER:", font=("Arial", 14)).grid(row=3, column=0, padx=20, pady=10, sticky="w")
-    entrada_super = ctk.CTkEntry(pestana_ingreso, placeholder_text="0", width=100)
-    entrada_super.grid(row=3, column=1, padx=20, pady=10)
+    entrada_super_pulg = ctk.CTkEntry(pestana_ingreso, placeholder_text="0", width=100)
+    entrada_super_pulg.grid(row=3, column=1, padx=20, pady=10)
     
    
     entrada_super_gls = ctk.CTkEntry(pestana_ingreso, placeholder_text="0", width=100, state="readonly")
@@ -71,12 +51,41 @@ def abrir_ventana_empleado():
     entrada_super_venta = ctk.CTkEntry(pestana_ingreso, placeholder_text="0", width=100, state="readonly")
     entrada_super_venta.grid(row=3, column=3, padx=20, pady=10)
 
-    
     boton_calcular = ctk.CTkButton(pestana_ingreso, text="CALCULAR MEDIDA")
     boton_calcular.grid(row=4, column=0, columnspan=4, pady=20)
     
-    
     boton_guardar = ctk.CTkButton(pestana_ingreso, text="GUARDAR REGISTRO", fg_color="green", hover_color="darkgreen")
+
+    return{
+        "diesel_pulg": entrada_diesel_pulg, "diesel_gls": entrada_diesel_gls, "diesel_venta": entrada_diesel_venta,
+        "regular_pulg": entrada_regular_pulg, "regular_gls": entrada_regular_gls, "regular_venta": entrada_regular_venta,
+        "super_pulg": entrada_super_pulg, "super_gls": entrada_super_gls, "super_venta": entrada_super_venta,
+        "btn_calcular": boton_calcular, "btn_guardar": boton_guardar
+    }
+
+
+
+def abrir_ventana_empleado():
+    ventana.withdraw() 
+    
+    ventana_emp = ctk.CTkToplevel()
+    ventana_emp.geometry("800x500")
+    ventana_emp.title("Panel de Empleado")
+
+    ventana_emp.protocol("WM_DELETE_WINDOW", cerrar_programa) 
+    
+    ctk.CTkLabel(ventana_emp, text="👤 Empleado", font=("Arial", 20, "bold")).pack(pady=10)
+    
+    tabs = ctk.CTkTabview(ventana_emp, width=750, height=400)
+    tabs.pack(pady=10)
+    
+    tabs.add("INGRESAR MEDIDA")
+    tabs.add("VER HISTORIAL")
+
+    componentes_emp = menu_ingresar_medidas(tabs.tab("INGRESAR MEDIDA"))
+    
+    
+   
 
 
 def abrir_ventana_admin():
@@ -99,6 +108,8 @@ def abrir_ventana_admin():
     tabs.add("Buscar")
     tabs.add("actualizar")
     tabs.add("Eliminar")
+
+    componentes_admin = menu_ingresar_medidas(tabs.tab("Añadir"))
 
 #funcion para finalizar el programa
 def cerrar_programa():
