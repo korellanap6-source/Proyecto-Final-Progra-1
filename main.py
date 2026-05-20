@@ -14,16 +14,13 @@ ventana.title("Sistema de Medición de Tanques")
 def abrir_ventana_empleado():
     ventana.withdraw() 
     
-    
     ventana_emp = ctk.CTkToplevel()
     ventana_emp.geometry("800x500")
     ventana_emp.title("Panel de Empleado")
 
-    ventana_emp.protocol("WM_DELETE_WINDOW", cerrar_programa)
-    
+    ventana_emp.protocol("WM_DELETE_WINDOW", cerrar_programa) 
     
     ctk.CTkLabel(ventana_emp, text="👤 Empleado", font=("Arial", 20, "bold")).pack(pady=10)
-    
     
     tabs = ctk.CTkTabview(ventana_emp, width=750, height=400)
     tabs.pack(pady=10)
@@ -31,9 +28,55 @@ def abrir_ventana_empleado():
     tabs.add("INGRESAR MEDIDA")
     tabs.add("VER HISTORIAL")
     
+    #INTERFAZ DE INGRESO DE MEDIDAS
+    pestana_ingreso = tabs.tab("INGRESAR MEDIDA")
     
-    ctk.CTkLabel(tabs.tab("INGRESAR MEDIDA"), text="Aquí pondremos las filas DIESEL, REGULAR, SUPER").pack(pady=50)
-    ctk.CTkButton(tabs.tab("INGRESAR MEDIDA"), text="GUARDAR REGISTRO").pack(side="bottom", pady=20)
+    # encabezados de columnas
+    ctk.CTkLabel(pestana_ingreso, text="Combustible", font=("Arial", 14, "bold")).grid(row=0, column=0, padx=20, pady=10)
+    ctk.CTkLabel(pestana_ingreso, text="Pulgadas (PULG)", font=("Arial", 14, "bold")).grid(row=0, column=1, padx=20, pady=10)
+    ctk.CTkLabel(pestana_ingreso, text="Galones (GLS)", font=("arial", 14, "bold")).grid(row=0, column=2, padx=20, pady=10)
+    ctk.CTkLabel(pestana_ingreso, text="Galones Disponibles para la venta", font=("arial", 14, "bold")).grid(row=0, column=3, padx=20, pady=10)
+    
+    # FILA DIESEL
+    ctk.CTkLabel(pestana_ingreso, text="⛽ DIESEL:", font=("Arial", 14)).grid(row=1, column=0, padx=20, pady=10, sticky="w")
+    entrada_diesel_pulg = ctk.CTkEntry(pestana_ingreso, placeholder_text="0", width=100)
+    entrada_diesel_pulg.grid(row=1, column=1, padx=20, pady=10)
+
+    
+    entrada_diesel_gls = ctk.CTkEntry(pestana_ingreso, placeholder_text="0", width=100, state="readonly")
+    entrada_diesel_gls.grid(row=1, column=2, padx=20, pady=10)
+
+    entrada_diesel_venta = ctk.CTkEntry(pestana_ingreso, placeholder_text="0", width=100, state="readonly")
+    entrada_diesel_venta.grid(row=1, column=3, padx=20, pady=10)
+    
+    # FILA REGULAR
+    ctk.CTkLabel(pestana_ingreso, text="⛽ REGULAR:", font=("Arial", 14)).grid(row=2, column=0, padx=20, pady=10, sticky="w")
+    entrada_regular = ctk.CTkEntry(pestana_ingreso, placeholder_text="0", width=100)
+    entrada_regular.grid(row=2, column=1, padx=20, pady=10)
+    
+    
+    entrada_regular_gls = ctk.CTkEntry(pestana_ingreso, placeholder_text="0", width=100, state="readonly")
+    entrada_regular_gls.grid(row=2, column=2, padx=20, pady=10)
+    entrada_regular_venta = ctk.CTkEntry(pestana_ingreso, placeholder_text="0", width=100, state="readonly")
+    entrada_regular_venta.grid(row=2, column=3, padx=20, pady=10)
+
+    # FILA SÚPER
+    ctk.CTkLabel(pestana_ingreso, text="⛽ SÚPER:", font=("Arial", 14)).grid(row=3, column=0, padx=20, pady=10, sticky="w")
+    entrada_super = ctk.CTkEntry(pestana_ingreso, placeholder_text="0", width=100)
+    entrada_super.grid(row=3, column=1, padx=20, pady=10)
+    
+   
+    entrada_super_gls = ctk.CTkEntry(pestana_ingreso, placeholder_text="0", width=100, state="readonly")
+    entrada_super_gls.grid(row=3, column=2, padx=20, pady=10)
+    entrada_super_venta = ctk.CTkEntry(pestana_ingreso, placeholder_text="0", width=100, state="readonly")
+    entrada_super_venta.grid(row=3, column=3, padx=20, pady=10)
+
+    
+    boton_calcular = ctk.CTkButton(pestana_ingreso, text="CALCULAR MEDIDA")
+    boton_calcular.grid(row=4, column=0, columnspan=4, pady=20)
+    
+    
+    boton_guardar = ctk.CTkButton(pestana_ingreso, text="GUARDAR REGISTRO", fg_color="green", hover_color="darkgreen")
 
 
 def abrir_ventana_admin():
