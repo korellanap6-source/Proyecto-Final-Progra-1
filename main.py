@@ -1,6 +1,7 @@
 import customtkinter as ctk 
 from usuario import usuario
 import datetime
+import calculo_T
 
 #aspecto general de la app
 ctk.set_appearance_mode("dark")
@@ -17,7 +18,7 @@ def menu_ingresar_medidas(pestana_ingreso):
     # Cuadro que muestra la fecha
     ctk.CTkLabel(
         pestana_ingreso, 
-        text=f"📅 Fecha del Registro: {fecha_actual} (Automática por el Sistema)", 
+        text=f"Fecha del Registro: {fecha_actual} (Automática por el Sistema)", 
         font=("Arial", 13, "italic"),
         text_color="gray"
     ).grid(row=0, column=0, columnspan=4, pady=10, sticky="w", padx=20)
@@ -56,11 +57,36 @@ def menu_ingresar_medidas(pestana_ingreso):
     entrada_super_pulg = ctk.CTkEntry(pestana_ingreso, placeholder_text="0", width=100)
     entrada_super_pulg.grid(row=4, column=1, padx=20, pady=10)
     
-   
     entrada_super_gls = ctk.CTkEntry(pestana_ingreso, placeholder_text="0", width=100, state="readonly")
     entrada_super_gls.grid(row=4, column=2, padx=20, pady=10)
     entrada_super_venta = ctk.CTkEntry(pestana_ingreso, placeholder_text="0", width=100, state="readonly")
     entrada_super_venta.grid(row=4, column=3, padx=20, pady=10)
+
+    def ejecutar_calculo():
+        pulg_d = entrada_diesel_pulg.get().strip()
+        pulg_r = entrada_regular_pulg.get().strip()
+        pulg_s = entrada_super_pulg.get().strip()
+
+        tot_d, ven_d = calculo_T.buscar_en_csv("calibracion_diesel.csv", pulg_d)
+        tot_r, ven_r = calculo_T.buscar_en_csv("calibracion_regular.csv", pulg_r)
+        tot_s, ven_s = calculo_T.buscar_en_csv("calibracion_super.csv", pulg_s)
+
+        def llenar_cajas(caja_tot, caja_ven, tot, ven):
+            caja_tot.configure(state="normal")
+            caja_tot.delete(0, 'end')
+            caja_tot.insert(0, str(tot))
+            caja_tot.configure(state="readonly")
+
+            caja_ven.configure(state="normal")
+            caja_ven.delete(0, 'end')
+            caja_ven.insert(0, str(ven))
+            caja_ven.configure(state="readonly")
+
+        llenar_cajas(entrada_diesel_gls, entrada_diesel_venta, tot_d, ven_d)
+        llenar_cajas(entrada_regular_gls, entrada_regular_venta, tot_r, ven_r)
+        llenar_cajas(entrada_super_gls, entrada_super_venta, tot_s, ven_s)
+
+        boton_guardar.grid(row=6, column=0, columnspan=4, pady=20)
 
     boton_calcular = ctk.CTkButton(pestana_ingreso, text="CALCULAR MEDIDA")
     boton_calcular.grid(row=5, column=0, columnspan=4, pady=20)
