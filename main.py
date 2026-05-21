@@ -88,7 +88,7 @@ def menu_ingresar_medidas(pestana_ingreso):
 
         boton_guardar.grid(row=6, column=0, columnspan=4, pady=20)
 
-    boton_calcular = ctk.CTkButton(pestana_ingreso, text="CALCULAR MEDIDA")
+    boton_calcular = ctk.CTkButton(pestana_ingreso, text="CALCULAR MEDIDA",command=ejecutar_calculo)
     boton_calcular.grid(row=5, column=0, columnspan=4, pady=20)
     
     boton_guardar = ctk.CTkButton(pestana_ingreso, text="GUARDAR REGISTRO", fg_color="green", hover_color="darkgreen")
