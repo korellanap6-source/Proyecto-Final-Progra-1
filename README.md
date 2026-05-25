@@ -21,3 +21,10 @@ El diseño de nuestra interfaz requiere una librería especial.
 2. Escribe el siguiente comando y presiona Enter:
 
    pip install customtkinter
+
+Abre la terminal de tu Visual Studio Code (asegúrate de estar en tu rama de pruebas) y ejecuta este comando. Esto instala la librería que permite a Python hablar con PostgreSQL:
+   pip install psycopg2-binary
+
+Antes de ejecutarlo, recuerda instalar la librería para leer el archivo .env ejecutando en tu terminal: 
+
+   pip install python-dotenv

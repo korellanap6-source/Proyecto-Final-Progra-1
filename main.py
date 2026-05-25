@@ -2,6 +2,19 @@ import customtkinter as ctk
 from usuario import usuario
 import datetime
 import calculo_T
+import psycopg2
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+def conexion():
+    try:
+        URL_CONEXION = os.getenv("DATABASE_URL")
+        return psycopg2.connect(URL_CONEXION)
+    except Exception as e:
+        print(f"Error de conexion: {e}")
+        return None
 
 #aspecto general de la app
 ctk.set_appearance_mode("dark")
