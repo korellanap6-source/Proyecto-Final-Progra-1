@@ -25,6 +25,36 @@ ventana = ctk.CTk()
 ventana.geometry("400x350")#ancho y alto
 ventana.title("Sistema de Medición de Tanques")
 
+def crear_tabla_si_no_existe():
+    conn = conexion()
+    if conn:
+        try:
+            cursor = conn.cursor()
+            
+            cursor.execute('''
+                CREATE TABLE IF NOT EXISTS registros_medidas (
+                    id SERIAL PRIMARY KEY,
+                    fecha DATE NOT NULL,
+                    diesel_pulg NUMERIC,
+                    diesel_gls NUMERIC,
+                    diesel_venta NUMERIC,
+                    regular_pulg NUMERIC,
+                    regular_gls NUMERIC,
+                    regular_venta NUMERIC,
+                    super_pulg NUMERIC,
+                    super_gls NUMERIC,
+                    super_venta NUMERIC
+                )
+            ''')
+            conn.commit()
+            cursor.close()
+            conn.close()
+        except Exception as e:
+            print(f"Error al crear tabla: {e}")
+
+
+crear_tabla_si_no_existe()
+
 def menu_ingresar_medidas(pestana_ingreso): 
     fecha_actual = datetime.date.today().strftime("%Y-%m-%d")
 
