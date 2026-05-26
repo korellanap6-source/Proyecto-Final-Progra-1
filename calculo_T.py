@@ -1,25 +1,50 @@
-import csv
+import psycopg2
+import os
+from dotenv import load_dotenv
 
-def buscar_en_csv(nombre_archivo, pulgadas):
-    if not pulgadas or pulgadas == "0":
-        return 0, 0
-        
-    try:
-        with open(f"Medidas_Tanques/{nombre_archivo}", mode="r") as archivo:
-            lector = csv.reader(archivo)
-            next(lector) 
-            
-            for fila in lector:
-                if fila[0] == pulgadas:
-                    galones_totales = int(float(fila[1]))
-                    galones_venta = galones_totales - 300 # Se restan 300 de la reserva del tanque
-                    
-                    if galones_venta < 0: 
-                        galones_venta = 0
-                    return galones_totales, galones_venta
-                    
-    except FileNotFoundError:
-        print(f"Error: No encuentro el archivo {nombre_archivo}")
+load_dotenv
+
+#establece conexion con la base de datos
+def conexion():
+    try: 
+        URL_CONEXION= os.getenv("DATABASE_URL")
+        return psycopg2.connect(URL_CONEXION)
+    except Exception as e:
+        print(f"Error en la conexion: {e}")
+        return None
     
-    # si escriben un número que no existe en la tabla
-    return 0, 0
+def buscar_medida(combustible, pulgadas):
+    #si el empleado dejó la caja de pulgadas en blanco, o puso un número negativo, el programa automáticamente devuelve 0
+    if not pulgadas or float(pulgadas) <= 0:
+        return 0,0
+    
+    bd_conexion=conexion()
+    if bd_conexion is None:
+        return 0,0
+    
+    try:
+        cursor=bd_conexion.cursor()
+        cursor.execute('''
+                       SELECT galones FROM calibracion_tanques
+                       WHERE combustible =%s AND pulgadas =%s;
+                       ''', (combustible, float(pulgadas)))
+        resultado= cursor.fetchone()
+
+        if resultado:
+            galones_totales= int(resultado[0])
+            # Restamos la reserva para saber cuántos se pueden vender
+            galones_venta = galones_totales-300
+
+            if galones_venta<0:
+                galones_venta=0
+            return galones_totales, galones_venta
+        
+    except Exception as e:
+        print(f"Error consultando la base de datos: {e}")
+    finally:
+        cursor.close()
+        bd_conexion.close
+    return 0,0
+
+    
+
