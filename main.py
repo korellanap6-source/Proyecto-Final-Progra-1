@@ -50,7 +50,6 @@ def crear_tabla_si_no_existe():
         except Exception as e:
             print(f"Error al crear tabla: {e}")
         finally:
-            # Garantiza el cierre de conexiones para evitar saturación
             if cursor:
                 cursor.close()
             if conn:
@@ -111,7 +110,6 @@ def menu_ingresar_medidas(pestana_ingreso):
         pulg_r = entrada_regular_pulg.get().strip()
         pulg_s = entrada_super_pulg.get().strip()
 
-        # Las funciones internas de calculo_T deben manejar internamente si viene texto inválido
         tot_d, ven_d = calculo_T.buscar_medida("DIESEL", pulg_d)
         tot_r, ven_r = calculo_T.buscar_medida("REGULAR", pulg_r)
         tot_s, ven_s = calculo_T.buscar_medida("SUPER", pulg_s)
@@ -148,6 +146,17 @@ def menu_ingresar_medidas(pestana_ingreso):
             
         try:
             cursor = conn.cursor()
+
+            # --- NUEVA COMPROBACIÓN: Verificar si ya existe un registro con la misma fecha ---
+            consulta_verificar = "SELECT id FROM registros_medidas WHERE fecha = %s LIMIT 1"
+            cursor.execute(consulta_verificar, (fecha_actual,))
+            registro_existente = cursor.fetchone()
+
+            if registro_existente:
+                mensaje_guardado.configure(text="Ya existe un registro con la fecha de hoy", text_color="orange")
+                return  # Detiene la ejecución y no inserta datos duplicados
+            # ---------------------------------------------------------------------------------
+
             consulta = """
                 INSERT INTO registros_medidas 
                 (fecha, diesel_pulg, diesel_gls, diesel_venta, 
@@ -156,7 +165,6 @@ def menu_ingresar_medidas(pestana_ingreso):
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
             
-            # Validación preventiva local por si se ingresan letras
             def obtener_valor(entrada):
                 val = entrada.get().strip()
                 try:
@@ -179,13 +187,11 @@ def menu_ingresar_medidas(pestana_ingreso):
             print(f"Error al guardar en BD: {e}")
             mensaje_guardado.configure(text="Error al guardar el registro", text_color="red")
         finally:
-            # El bloque finally asegura el cierre de flujos ocurra o no una excepción
             if cursor:
                 cursor.close()
             if conn:
                 conn.close()
 
-    # Corrección: Se añade command=guardar_en_bd
     boton_guardar = ctk.CTkButton(pestana_ingreso, text="GUARDAR REGISTRO", fg_color="green", hover_color="darkgreen", command=guardar_en_bd)
 
     return {
@@ -281,4 +287,3 @@ mensaje_error = ctk.CTkLabel(ventana, text="", text_color="red")
 mensaje_error.pack(pady=5)
 
 ventana.mainloop()
-
