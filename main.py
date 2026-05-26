@@ -80,9 +80,9 @@ def menu_ingresar_medidas(pestana_ingreso):
         pulg_r = entrada_regular_pulg.get().strip()
         pulg_s = entrada_super_pulg.get().strip()
 
-        tot_d, ven_d = calculo_T.buscar_en_csv("calibracion_diesel.csv", pulg_d)
-        tot_r, ven_r = calculo_T.buscar_en_csv("calibracion_regular.csv", pulg_r)
-        tot_s, ven_s = calculo_T.buscar_en_csv("calibracion_super.csv", pulg_s)
+        tot_d, ven_d = calculo_T.buscar_medida("DIESEL", pulg_d)
+        tot_r, ven_r = calculo_T.buscar_medida("REGULAR", pulg_r)
+        tot_s, ven_s = calculo_T.buscar_medida("SUPER", pulg_s)
 
         def llenar_cajas(caja_tot, caja_ven, tot, ven):
             caja_tot.configure(state="normal")

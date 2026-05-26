@@ -15,16 +15,13 @@ contraseña: 5678
 2. Ve al apartado de **Extensiones** .
 3. Busca **"Python"** y dale a **Instalar**.
 
-### 3. Instalar la Librería Visual (CustomTkinter)
-El diseño de nuestra interfaz requiere una librería especial.
-1. Abre la terminal dentro de VS Code  `Terminal` -> `New Terminal`
-2. Escribe el siguiente comando y presiona Enter:
+### 3. instalar las dependencias del proyecto
+Para que el sistema funcione correctamente, necesitamos instalar las librerías que controlan la interfaz gráfica (customtkinter), la conexión a la base de datos en la nube (psycopg2-binary) y la seguridad de contraseñas (python-dotenv).
 
-   pip install customtkinter
+Abre la terminal dentro de VS Code (Terminal -> New Terminal).
 
-Abre la terminal de tu Visual Studio Code (asegúrate de estar en tu rama de pruebas) y ejecuta este comando. Esto instala la librería que permite a Python hablar con PostgreSQL:
-   pip install psycopg2-binary
+Copia, pega el siguiente comando y presiona Enter:
 
-Antes de ejecutarlo, recuerda instalar la librería para leer el archivo .env ejecutando en tu terminal: 
+pip install customtkinter psycopg2-binary python-dotenv
 
-   pip install python-dotenv
+Espera a que termine de descargar y listo
