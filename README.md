@@ -20,12 +20,16 @@ El diseño de nuestra interfaz requiere una librería especial.
 1. Abre la terminal dentro de VS Code  `Terminal` -> `New Terminal`
 2. Escribe el siguiente comando y presiona Enter:
 
-   pip install customtkinter
+   pip install customtkinter 
+   
+   Hola Amigos 
 
-___________________________
-Hola mundo 451632git
 
 
-Un nuevo cambio akoscicokasdck
 
-Valimos en el proyecto
+
+Bryan mi amigo 
+
+holaa holaa
+
+holis hello 
