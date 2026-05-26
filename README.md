@@ -21,3 +21,6 @@ El diseño de nuestra interfaz requiere una librería especial.
 2. Escribe el siguiente comando y presiona Enter:
 
    pip install customtkinter
+
+___________________________
+Hola mundo 451632
