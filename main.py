@@ -193,3 +193,7 @@ mensaje_error = ctk.CTkLabel(ventana, text="", text_color="red")
 mensaje_error.pack(pady=5)
 
 ventana.mainloop()
+
+
+
+Hola mundo
