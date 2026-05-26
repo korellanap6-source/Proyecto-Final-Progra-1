@@ -92,22 +92,4 @@ def buscar_medida(combustible, pulgadas):
 
     return 0,0 
 
-def editar_registro_completo(id_registro, nuevo_combustible, nuevas_pulgadas, nueva_fecha):
-    bd_conexion = conexion()
-    if bd_conexion is None:
-        return False
-    try:
-        cursor = bd_conexion.cursor()
-       
-        sql = "UPDATE calibracion_tanques SET combustible = %s, pulgadas = %s, fecha_registro = %s WHERE id = %s"
-        cursor.execute(sql, (nuevo_combustible, float(nuevas_pulgadas), nueva_fecha, id_registro))
-        bd_conexion.commit()
-        return True
-    except Exception as e:
-        print(f"Error al editar: {e}")
-        return False
-    finally:
-        if 'cursor' in locals() and cursor:
-            cursor.close()
-        if bd_conexion and not bd_conexion.closed:
-            bd_conexion.close()
+
