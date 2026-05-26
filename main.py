@@ -196,4 +196,3 @@ ventana.mainloop()
 
 
 
-Hola mundo
