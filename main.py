@@ -143,7 +143,7 @@ def abrir_ventana_admin():
     tabs.add("Añadir")
     tabs.add("Historial")
     tabs.add("Buscar")
-    tabs.add("actualizar")
+    tabs.add("Editar")
     tabs.add("Eliminar")
 
     componentes_admin = menu_ingresar_medidas(tabs.tab("Añadir"))
