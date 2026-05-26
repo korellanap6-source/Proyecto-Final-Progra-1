@@ -23,3 +23,5 @@ El diseño de nuestra interfaz requiere una librería especial.
    pip install customtkinter 
    
 hola mundo
+
+Hola chichos, chicas, preguntas?
