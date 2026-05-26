@@ -133,6 +133,48 @@ def menu_ingresar_medidas(pestana_ingreso):
 
     boton_calcular = ctk.CTkButton(pestana_ingreso, text="CALCULAR MEDIDA",command=ejecutar_calculo)
     boton_calcular.grid(row=5, column=0, columnspan=4, pady=20)
+
+    mensaje_guardado = ctk.CTkLabel(pestana_ingreso, text="", font=("Arial", 12))
+    mensaje_guardado.grid(row=7, column=0, columnspan=4, pady=5)
+
+    def guardar_en_bd():
+        conn = conexion()
+        if not conn:
+            mensaje_guardado.configure(text="Error de conexión a BD", text_color="red")
+            return
+            
+        try:
+            cursor = conn.cursor()
+            consulta = """
+                INSERT INTO registros_medidas 
+                (fecha, diesel_pulg, diesel_gls, diesel_venta, 
+                 regular_pulg, regular_gls, regular_venta, 
+                 super_pulg, super_gls, super_venta) 
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            """
+            
+            def obtener_valor(entrada):
+                val = entrada.get().strip()
+                return float(val) if val else 0.0
+
+            valores = (
+                fecha_actual,
+                obtener_valor(entrada_diesel_pulg), obtener_valor(entrada_diesel_gls), obtener_valor(entrada_diesel_venta),
+                obtener_valor(entrada_regular_pulg), obtener_valor(entrada_regular_gls), obtener_valor(entrada_regular_venta),
+                obtener_valor(entrada_super_pulg), obtener_valor(entrada_super_gls), obtener_valor(entrada_super_venta)
+            )
+            
+            cursor.execute(consulta, valores)
+            conn.commit()
+            cursor.close()
+            conn.close()
+            
+            mensaje_guardado.configure(text="¡Registro guardado exitosamente!", text_color="green")
+            
+        except Exception as e:
+            print(f"Error al guardar en BD: {e}")
+            mensaje_guardado.configure(text="Error al guardar el registro", text_color="red")
+
     
     boton_guardar = ctk.CTkButton(pestana_ingreso, text="GUARDAR REGISTRO", fg_color="green", hover_color="darkgreen")
 
