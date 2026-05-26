@@ -22,17 +22,3 @@ El diseño de nuestra interfaz requiere una librería especial.
 
    pip install customtkinter 
    
-   Hola Amigos 
-
-
-
-
-
-Bryan mi amigo 
-
-holaa holaa
-
-holis hello 
-como estan 
-
-hOLA NIÑOS
