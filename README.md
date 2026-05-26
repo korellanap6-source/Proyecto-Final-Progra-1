@@ -25,3 +25,5 @@ Copia, pega el siguiente comando y presiona Enter:
 pip install customtkinter psycopg2-binary python-dotenv
 
 Espera a que termine de descargar y listo
+
+ijndcojdcosdc
