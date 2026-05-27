@@ -40,6 +40,25 @@ def login_db(nombre, password):
         return None
 
 
+def buscar_por_fecha(fecha):
+    conn = conexion()
+    if conn is None:
+        return []
+
+    try:
+        cur = conn.cursor()
+        query = "SELECT * FROM registros_medidas WHERE fecha = %s"
+        cur.execute(query, (fecha,))
+        resultados = cur.fetchall()
+        cur.close()
+        conn.close()
+        return resultados
+
+    except Exception as e:
+        print("Error buscando:", e)
+        return []
+
+
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
 
@@ -80,6 +99,38 @@ boton_entrar.pack(pady=20)
 
 mensaje_error = ctk.CTkLabel(ventana, text="", text_color="red")
 mensaje_error.pack(pady=5)
+
+
+def menu_buscar(pestana):
+
+    ctk.CTkLabel(
+        pestana,
+        text="Buscar registros por fecha (YYYY-MM-DD)",
+        font=("Arial", 14, "bold")
+    ).pack(pady=10)
+
+    entrada_fecha = ctk.CTkEntry(pestana, placeholder_text="2026-05-27", width=200)
+    entrada_fecha.pack(pady=10)
+
+    resultado_box = ctk.CTkTextbox(pestana, width=700, height=300)
+    resultado_box.pack(pady=10)
+
+    def ejecutar_busqueda():
+        fecha = entrada_fecha.get().strip()
+
+        datos = buscar_por_fecha(fecha)
+
+        resultado_box.delete("1.0", "end")
+
+        if not datos:
+            resultado_box.insert("end", "No hay registros en esa fecha")
+            return
+
+        for fila in datos:
+            resultado_box.insert("end", str(fila) + "\n")
+
+    boton = ctk.CTkButton(pestana, text="BUSCAR", command=ejecutar_busqueda)
+    boton.pack(pady=10)
 
 
 def menu_ingresar_medidas(pestana_ingreso): 
@@ -210,6 +261,7 @@ def abrir_ventana_admin():
     tabs.add("Eliminar")
 
     menu_ingresar_medidas(tabs.tab("Añadir"))
+    menu_buscar(tabs.tab("Buscar"))
 
 
 def cerrar_programa():
