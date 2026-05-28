@@ -344,21 +344,33 @@ def cerrar_programa():
 def intentar_login():
     u = entrada_usuario.get().strip()
     p = entrada_password.get().strip()
-    
-    print(f"Intentando entrar con -> Usuario: '{u}' | Password: '{p}'")
-    
-    usuario_admin = usuario("admin", "1234")
-    usuario_trab = usuario("gas", "5678")
-    
-    # Validar
-    if usuario_admin.validar(u, p):
-        mensaje_error.configure(text="")
-        abrir_ventana_admin()
-    elif usuario_trab.validar(u, p):
-        mensaje_error.configure(text="")
-        abrir_ventana_empleado()
-    else:
-        mensaje_error.configure(text="Error: Usuario o contraseña incorrectos")
+
+    try:
+        conn = conexion()
+        cur = conn.cursor()
+
+        cur.execute("""
+            SELECT rol FROM usuarios
+            WHERE username = %s AND password = %s
+        """, (u, p))
+
+        resultado = cur.fetchone()
+
+        if resultado:
+            rol = resultado[0]
+            mensaje_error.configure(text="")
+
+            if rol == "admin":
+                abrir_ventana_admin()
+            else:
+                abrir_ventana_empleado()
+        else:
+            mensaje_error.configure(text="Usuario o contraseña incorrectos")
+
+        conn.close()
+
+    except:
+        mensaje_error.configure(text="Error al validar usuario")
 
 # titulo principal 
 titulo = ctk.CTkLabel(ventana, text="LOGIN AL SISTEMA", font=("Arial",20,"bold"))
