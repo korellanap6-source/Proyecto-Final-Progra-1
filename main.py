@@ -1,5 +1,4 @@
 import customtkinter as ctk 
-from usuario import usuario
 import datetime
 import calculo_T
 import psycopg2
@@ -15,127 +14,98 @@ def conexion():
     except Exception as e:
         print(f"Error de conexion: {e}")
         return None
-    
+
 # Aspecto general de la app
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
 
 # Ventana principal
 ventana = ctk.CTk()
-ventana.geometry("400x350")  # Ancho y alto
+ventana.geometry("400x350")
 ventana.title("Sistema de Medición de Tanques")
 
-def crear_tabla_si_no_existe():
-    conn = conexion()
-    cursor = None
-    if conn:
-        try:
-            cursor = conn.cursor()
-            cursor.execute('''
-                CREATE TABLE IF NOT EXISTS registros_medidas (
-                    id SERIAL PRIMARY KEY,
-                    fecha DATE NOT NULL,
-                    diesel_pulg NUMERIC,
-                    diesel_gls NUMERIC,
-                    diesel_venta NUMERIC,
-                    regular_pulg NUMERIC,
-                    regular_gls NUMERIC,
-                    regular_venta NUMERIC,
-                    super_pulg NUMERIC,
-                    super_gls NUMERIC,
-                    super_venta NUMERIC
-                )
-            ''')
-            conn.commit()
-        except Exception as e:
-            print(f"Error al crear tabla: {e}")
-        finally:
-            if cursor:
-                cursor.close()
-            if conn:
-                conn.close()
+def crear_interfaz_cajas(contenedor, fila_inicio):
+    """ Función recicladora para generar la cuadrícula de textos de las medidas """
+    # encabezados de columnas
+    ctk.CTkLabel(contenedor, text="Combustible", font=("Arial", 14, "bold")).grid(row=fila_inicio, column=0, padx=20, pady=10)
+    ctk.CTkLabel(contenedor, text="Pulgadas (PULG)", font=("Arial", 14, "bold")).grid(row=fila_inicio, column=1, padx=20, pady=10)
+    ctk.CTkLabel(contenedor, text="Galones (GLS)", font=("arial", 14, "bold")).grid(row=fila_inicio, column=2, padx=20, pady=10)
+    ctk.CTkLabel(contenedor, text="Galones Disponibles (Venta)", font=("arial", 14, "bold")).grid(row=fila_inicio, column=3, padx=20, pady=10)
+    
+    # FILA DIESEL
+    ctk.CTkLabel(contenedor, text="⛽ DIESEL:", font=("Arial", 14)).grid(row=fila_inicio+1, column=0, padx=20, pady=10, sticky="w")
+    entrada_diesel_pulg = ctk.CTkEntry(contenedor, placeholder_text="0", width=100)
+    entrada_diesel_pulg.grid(row=fila_inicio+1, column=1, padx=20, pady=10)
+    entrada_diesel_gls = ctk.CTkEntry(contenedor, placeholder_text="0", width=100, state="readonly")
+    entrada_diesel_gls.grid(row=fila_inicio+1, column=2, padx=20, pady=10)
+    entrada_diesel_venta = ctk.CTkEntry(contenedor, placeholder_text="0", width=100, state="readonly")
+    entrada_diesel_venta.grid(row=fila_inicio+1, column=3, padx=20, pady=10)
+    
+    # FILA REGULAR
+    ctk.CTkLabel(contenedor, text="⛽ REGULAR:", font=("Arial", 14)).grid(row=fila_inicio+2, column=0, padx=20, pady=10, sticky="w")
+    entrada_regular_pulg = ctk.CTkEntry(contenedor, placeholder_text="0", width=100)
+    entrada_regular_pulg.grid(row=fila_inicio+2, column=1, padx=20, pady=10)
+    entrada_regular_gls = ctk.CTkEntry(contenedor, placeholder_text="0", width=100, state="readonly")
+    entrada_regular_gls.grid(row=fila_inicio+2, column=2, padx=20, pady=10)
+    entrada_regular_venta = ctk.CTkEntry(contenedor, placeholder_text="0", width=100, state="readonly")
+    entrada_regular_venta.grid(row=fila_inicio+2, column=3, padx=20, pady=10)
 
-crear_tabla_si_no_existe()
+    # FILA SÚPER
+    ctk.CTkLabel(contenedor, text="⛽ SÚPER:", font=("Arial", 14)).grid(row=fila_inicio+3, column=0, padx=20, pady=10, sticky="w")
+    entrada_super_pulg = ctk.CTkEntry(contenedor, placeholder_text="0", width=100)
+    entrada_super_pulg.grid(row=fila_inicio+3, column=1, padx=20, pady=10)
+    entrada_super_gls = ctk.CTkEntry(contenedor, placeholder_text="0", width=100, state="readonly")
+    entrada_super_gls.grid(row=fila_inicio+3, column=2, padx=20, pady=10)
+    entrada_super_venta = ctk.CTkEntry(contenedor, placeholder_text="0", width=100, state="readonly")
+    entrada_super_venta.grid(row=fila_inicio+3, column=3, padx=20, pady=10)
+
+    return {
+        "d_pulg": entrada_diesel_pulg, "d_gls": entrada_diesel_gls, "d_ven": entrada_diesel_venta,
+        "r_pulg": entrada_regular_pulg, "r_gls": entrada_regular_gls, "r_ven": entrada_regular_venta,
+        "s_pulg": entrada_super_pulg, "s_gls": entrada_super_gls, "s_ven": entrada_super_venta
+    }
+
 
 def menu_ingresar_medidas(pestana_ingreso): 
     fecha_actual = datetime.date.today().strftime("%Y-%m-%d")
 
-    # Cuadro que muestra la fecha
     ctk.CTkLabel(
         pestana_ingreso, 
         text=f"Fecha del Registro: {fecha_actual} (Automática por el Sistema)", 
-        font=("Arial", 13, "italic"),
-        text_color="gray"
+        font=("Arial", 13, "italic"), text_color="gray"
     ).grid(row=0, column=0, columnspan=4, pady=10, sticky="w", padx=20)
 
-    # Encabezados de columnas
-    ctk.CTkLabel(pestana_ingreso, text="Combustible", font=("Arial", 14, "bold")).grid(row=1, column=0, padx=20, pady=10)
-    ctk.CTkLabel(pestana_ingreso, text="Pulgadas (PULG)", font=("Arial", 14, "bold")).grid(row=1, column=1, padx=20, pady=10)
-    ctk.CTkLabel(pestana_ingreso, text="Galones (GLS)", font=("arial", 14, "bold")).grid(row=1, column=2, padx=20, pady=10)
-    ctk.CTkLabel(pestana_ingreso, text="Galones Disponibles para la venta", font=("arial", 14, "bold")).grid(row=1, column=3, padx=20, pady=10)
-    
-    # FILA DIESEL
-    ctk.CTkLabel(pestana_ingreso, text="⛽ DIESEL:", font=("Arial", 14)).grid(row=2, column=0, padx=20, pady=10, sticky="w")
-    entrada_diesel_pulg = ctk.CTkEntry(pestana_ingreso, placeholder_text="0", width=100)
-    entrada_diesel_pulg.grid(row=2, column=1, padx=20, pady=10)
+    # Llamamos a la función para pintar las cajas en la fila 1
+    cajas = crear_interfaz_cajas(pestana_ingreso, 1)
 
-    entrada_diesel_gls = ctk.CTkEntry(pestana_ingreso, placeholder_text="0", width=100, state="readonly")
-    entrada_diesel_gls.grid(row=2, column=2, padx=20, pady=10)
+    mensaje_guardado = ctk.CTkLabel(pestana_ingreso, text="", font=("Arial", 12))
+    mensaje_guardado.grid(row=7, column=0, columnspan=4, pady=5)
 
-    entrada_diesel_venta = ctk.CTkEntry(pestana_ingreso, placeholder_text="0", width=100, state="readonly")
-    entrada_diesel_venta.grid(row=2, column=3, padx=20, pady=10)
-    
-    # FILA REGULAR
-    ctk.CTkLabel(pestana_ingreso, text="⛽ REGULAR:", font=("Arial", 14)).grid(row=3, column=0, padx=20, pady=10, sticky="w")
-    entrada_regular_pulg = ctk.CTkEntry(pestana_ingreso, placeholder_text="0", width=100)
-    entrada_regular_pulg.grid(row=3, column=1, padx=20, pady=10)
-    
-    entrada_regular_gls = ctk.CTkEntry(pestana_ingreso, placeholder_text="0", width=100, state="readonly")
-    entrada_regular_gls.grid(row=3, column=2, padx=20, pady=10)
-    entrada_regular_venta = ctk.CTkEntry(pestana_ingreso, placeholder_text="0", width=100, state="readonly")
-    entrada_regular_venta.grid(row=3, column=3, padx=20, pady=10)
-
-    # FILA SÚPER
-    ctk.CTkLabel(pestana_ingreso, text="⛽ SÚPER:", font=("Arial", 14)).grid(row=4, column=0, padx=20, pady=10, sticky="w")
-    entrada_super_pulg = ctk.CTkEntry(pestana_ingreso, placeholder_text="0", width=100)
-    entrada_super_pulg.grid(row=4, column=1, padx=20, pady=10)
-    
-    entrada_super_gls = ctk.CTkEntry(pestana_ingreso, placeholder_text="0", width=100, state="readonly")
-    entrada_super_gls.grid(row=4, column=2, padx=20, pady=10)
-    entrada_super_venta = ctk.CTkEntry(pestana_ingreso, placeholder_text="0", width=100, state="readonly")
-    entrada_super_venta.grid(row=4, column=3, padx=20, pady=10)
+    def llenar_cajas(caja_tot, caja_ven, tot, ven):
+        caja_tot.configure(state="normal")
+        caja_tot.delete(0, 'end')
+        caja_tot.insert(0, str(tot))
+        caja_tot.configure(state="readonly")
+        
+        caja_ven.configure(state="normal")
+        caja_ven.delete(0, 'end')
+        caja_ven.insert(0, str(ven))
+        caja_ven.configure(state="readonly")
 
     def ejecutar_calculo():
-        pulg_d = entrada_diesel_pulg.get().strip()
-        pulg_r = entrada_regular_pulg.get().strip()
-        pulg_s = entrada_super_pulg.get().strip()
+        pulg_d = cajas["d_pulg"].get().strip() or "0"
+        pulg_r = cajas["r_pulg"].get().strip() or "0"
+        pulg_s = cajas["s_pulg"].get().strip() or "0"
 
         tot_d, ven_d = calculo_T.buscar_medida("DIESEL", pulg_d)
         tot_r, ven_r = calculo_T.buscar_medida("REGULAR", pulg_r)
         tot_s, ven_s = calculo_T.buscar_medida("SUPER", pulg_s)
 
-        def llenar_cajas(caja_tot, caja_ven, tot, ven):
-            caja_tot.configure(state="normal")
-            caja_tot.delete(0, 'end')
-            caja_tot.insert(0, str(tot))
-            caja_tot.configure(state="readonly")
-
-            caja_ven.configure(state="normal")
-            caja_ven.delete(0, 'end')
-            caja_ven.insert(0, str(ven))
-            caja_ven.configure(state="readonly")
-
-        llenar_cajas(entrada_diesel_gls, entrada_diesel_venta, tot_d, ven_d)
-        llenar_cajas(entrada_regular_gls, entrada_regular_venta, tot_r, ven_r)
-        llenar_cajas(entrada_super_gls, entrada_super_venta, tot_s, ven_s)
+        llenar_cajas(cajas["d_gls"], cajas["d_ven"], tot_d, ven_d)
+        llenar_cajas(cajas["r_gls"], cajas["r_ven"], tot_r, ven_r)
+        llenar_cajas(cajas["s_gls"], cajas["s_ven"], tot_s, ven_s)
 
         boton_guardar.grid(row=6, column=0, columnspan=4, pady=20)
-
-    boton_calcular = ctk.CTkButton(pestana_ingreso, text="CALCULAR MEDIDA", command=ejecutar_calculo)
-    boton_calcular.grid(row=5, column=0, columnspan=4, pady=20)
-
-    mensaje_guardado = ctk.CTkLabel(pestana_ingreso, text="", font=("Arial", 12))
-    mensaje_guardado.grid(row=7, column=0, columnspan=4, pady=5)
 
     def guardar_en_bd():
         conn = conexion()
@@ -147,59 +117,137 @@ def menu_ingresar_medidas(pestana_ingreso):
         try:
             cursor = conn.cursor()
 
-            # --- NUEVA COMPROBACIÓN: Verificar si ya existe un registro con la misma fecha ---
+            # --- COMPROBACIÓN (Recuperado de rama 'datos'): Evita duplicar el día ---
             consulta_verificar = "SELECT id FROM registros_medidas WHERE fecha = %s LIMIT 1"
             cursor.execute(consulta_verificar, (fecha_actual,))
             registro_existente = cursor.fetchone()
 
             if registro_existente:
                 mensaje_guardado.configure(text="Ya existe un registro con la fecha de hoy", text_color="orange")
-                return  # Detiene la ejecución y no inserta datos duplicados
-            # ---------------------------------------------------------------------------------
+                return
+            # -------------------------------------------------------------------------
 
             consulta = """
-                INSERT INTO registros_medidas 
-                (fecha, diesel_pulg, diesel_gls, diesel_venta, 
-                 regular_pulg, regular_gls, regular_venta, 
-                 super_pulg, super_gls, super_venta) 
+                INSERT INTO registros_medidas (fecha, diesel_pulg, diesel_gls, diesel_venta, regular_pulg, regular_gls, regular_venta, super_pulg, super_gls, super_venta) 
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
             
-            def obtener_valor(entrada):
-                val = entrada.get().strip()
-                try:
-                    return float(val) if val else 0.0
-                except ValueError:
-                    return 0.0
-
             valores = (
-                fecha_actual,
-                obtener_valor(entrada_diesel_pulg), obtener_valor(entrada_diesel_gls), obtener_valor(entrada_diesel_venta),
-                obtener_valor(entrada_regular_pulg), obtener_valor(entrada_regular_gls), obtener_valor(entrada_regular_venta),
-                obtener_valor(entrada_super_pulg), obtener_valor(entrada_super_gls), obtener_valor(entrada_super_venta)
+                fecha_actual, 
+                float(cajas["d_pulg"].get() or 0), float(cajas["d_gls"].get() or 0), float(cajas["d_ven"].get() or 0),
+                float(cajas["r_pulg"].get() or 0), float(cajas["r_gls"].get() or 0), float(cajas["r_ven"].get() or 0),
+                float(cajas["s_pulg"].get() or 0), float(cajas["s_gls"].get() or 0), float(cajas["s_ven"].get() or 0)
             )
             
             cursor.execute(consulta, valores)
             conn.commit()
             mensaje_guardado.configure(text="¡Registro guardado exitosamente!", text_color="green")
+            boton_guardar.grid_forget()
             
         except Exception as e:
             print(f"Error al guardar en BD: {e}")
             mensaje_guardado.configure(text="Error al guardar el registro", text_color="red")
         finally:
-            if cursor:
-                cursor.close()
-            if conn:
-                conn.close()
+            if cursor: cursor.close()
+            if conn: conn.close()
 
+    boton_calcular = ctk.CTkButton(pestana_ingreso, text="CALCULAR MEDIDA", command=ejecutar_calculo)
+    boton_calcular.grid(row=5, column=0, columnspan=4, pady=20)
+    
     boton_guardar = ctk.CTkButton(pestana_ingreso, text="GUARDAR REGISTRO", fg_color="green", hover_color="darkgreen", command=guardar_en_bd)
 
-    return {
-        "diesel_pulg": entrada_diesel_pulg, "diesel_gls": entrada_diesel_gls, "diesel_venta": entrada_diesel_venta,
-        "regular_pulg": entrada_regular_pulg, "regular_gls": entrada_regular_gls, "regular_venta": entrada_regular_venta,
-        "super_pulg": entrada_super_pulg, "super_gls": entrada_super_gls, "super_venta": entrada_super_venta,
-        "btn_calcular": boton_calcular, "btn_guardar": boton_guardar
-    }
+
+def menu_editar_medidas(pestana_editar):
+    # 1. Buscador Superior
+    marco_buscador = ctk.CTkFrame(pestana_editar)
+    marco_buscador.grid(row=0, column=0, columnspan=4, pady=10, padx=20, sticky="w")
+    
+    ctk.CTkLabel(marco_buscador, text="Buscar Fecha (YYYY-MM-DD):", font=("Arial", 13, "bold")).grid(row=0, column=0, padx=10, pady=5)
+    entrada_fecha = ctk.CTkEntry(marco_buscador, placeholder_text="Ej. 2023-10-25", width=120)
+    entrada_fecha.grid(row=0, column=1, padx=10, pady=5)
+
+    mensaje_editar = ctk.CTkLabel(pestana_editar, text="", font=("Arial", 12))
+    
+    # 2. Reciclar la interfaz visual en la fila 1
+    cajas = crear_interfaz_cajas(pestana_editar, 1)
+
+    def llenar_caja(caja, valor, es_lectura=False):
+        caja.configure(state="normal")
+        caja.delete(0, 'end')
+        caja.insert(0, str(valor) if valor is not None else "0")
+        if es_lectura:
+            caja.configure(state="readonly")
+
+    def buscar_registro():
+        fecha = entrada_fecha.get().strip()
+        if not fecha:
+            mensaje_editar.configure(text="Por favor ingresa una fecha.", text_color="red")
+            return
+            
+        registro = calculo_T.buscar_por_fecha(fecha) # Usamos la función que pusimos en calculo_T
+        if registro and len(registro) > 0:
+            fila = registro[0] # Tomamos la primera fila encontrada
+            mensaje_editar.configure(text="Registro encontrado. Modifica las pulgadas y recalcula.", text_color="green")
+            
+            # Orden de BD: id (0), fecha (1), d_pulg (2), d_gls (3), d_ven (4)...
+            llenar_caja(cajas["d_pulg"], fila[2])
+            llenar_caja(cajas["d_gls"], fila[3], True)
+            llenar_caja(cajas["d_ven"], fila[4], True)
+            
+            llenar_caja(cajas["r_pulg"], fila[5])
+            llenar_caja(cajas["r_gls"], fila[6], True)
+            llenar_caja(cajas["r_ven"], fila[7], True)
+            
+            llenar_caja(cajas["s_pulg"], fila[8])
+            llenar_caja(cajas["s_gls"], fila[9], True)
+            llenar_caja(cajas["s_ven"], fila[10], True)
+            
+            boton_calcular.grid(row=5, column=0, columnspan=4, pady=10)
+            boton_guardar.grid_forget()
+        else:
+            mensaje_editar.configure(text="No se encontró registro para esa fecha.", text_color="red")
+
+    boton_buscar = ctk.CTkButton(marco_buscador, text="Buscar", command=buscar_registro)
+    boton_buscar.grid(row=0, column=2, padx=10, pady=5)
+
+    # 3. Recálculo
+    def ejecutar_calculo():
+        tot_d, ven_d = calculo_T.buscar_medida("DIESEL", cajas["d_pulg"].get().strip() or "0")
+        tot_r, ven_r = calculo_T.buscar_medida("REGULAR", cajas["r_pulg"].get().strip() or "0")
+        tot_s, ven_s = calculo_T.buscar_medida("SUPER", cajas["s_pulg"].get().strip() or "0")
+
+        llenar_caja(cajas["d_gls"], tot_d, True)
+        llenar_caja(cajas["d_ven"], ven_d, True)
+        llenar_caja(cajas["r_gls"], tot_r, True)
+        llenar_caja(cajas["r_ven"], ven_r, True)
+        llenar_caja(cajas["s_gls"], tot_s, True)
+        llenar_caja(cajas["s_ven"], ven_s, True)
+        
+        boton_guardar.grid(row=6, column=0, columnspan=4, pady=10)
+        mensaje_editar.configure(text="Cálculo actualizado. Ahora puedes guardar.", text_color="orange")
+
+    boton_calcular = ctk.CTkButton(pestana_editar, text="CALCULAR NUEVA MEDIDA", command=ejecutar_calculo)
+
+    # 4. Actualizar Base de Datos (UPDATE)
+    def guardar_cambios():
+        fecha = entrada_fecha.get().strip()
+        # NOTA: Debemos asegurar que calculo_T.actualizar_registro exista en calculo_T.py
+        exito = calculo_T.actualizar_registro(
+            fecha,
+            float(cajas["d_pulg"].get() or 0), float(cajas["d_gls"].get() or 0), float(cajas["d_ven"].get() or 0),
+            float(cajas["r_pulg"].get() or 0), float(cajas["r_gls"].get() or 0), float(cajas["r_ven"].get() or 0),
+            float(cajas["s_pulg"].get() or 0), float(cajas["s_gls"].get() or 0), float(cajas["s_ven"].get() or 0)
+        )
+        
+        if exito:
+            mensaje_editar.configure(text="¡Registro Actualizado Exitosamente!", text_color="green")
+            boton_guardar.grid_forget()
+        else:
+            mensaje_editar.configure(text="Error al actualizar.", text_color="red")
+
+    boton_guardar = ctk.CTkButton(pestana_editar, text="GUARDAR CAMBIOS", fg_color="green", hover_color="darkgreen", command=guardar_cambios)
+    mensaje_editar.grid(row=7, column=0, columnspan=4, pady=5)
+
 
 def abrir_ventana_empleado():
     ventana.withdraw() 
@@ -218,7 +266,8 @@ def abrir_ventana_empleado():
     tabs.add("INGRESAR MEDIDA")
     tabs.add("VER HISTORIAL")
 
-    componentes_emp = menu_ingresar_medidas(tabs.tab("INGRESAR MEDIDA"))
+    menu_ingresar_medidas(tabs.tab("INGRESAR MEDIDA"))
+
 
 def abrir_ventana_admin():
     ventana.withdraw() 
@@ -241,7 +290,10 @@ def abrir_ventana_admin():
     tabs.add("Editar")
     tabs.add("Eliminar")
 
-    componentes_admin = menu_ingresar_medidas(tabs.tab("Añadir"))
+    # Inyectamos las funciones en sus pestañas
+    menu_ingresar_medidas(tabs.tab("Añadir"))
+    menu_editar_medidas(tabs.tab("Editar"))
+
 
 # Función para finalizar el programa
 def cerrar_programa():
@@ -254,18 +306,18 @@ def intentar_login():
     
     print(f"Intentando entrar con -> Usuario: '{u}' | Password: '{p}'")
     
-    usuario_admin = usuario("admin", "1234")
-    usuario_trab = usuario("gas", "5678")
+    # Conexión real a la BD que trabajamos antes
+    rol = calculo_T.verificar_login(u, p)
     
-    # Validar
-    if usuario_admin.validar(u, p):
+    if rol == "admin":
         mensaje_error.configure(text="")
         abrir_ventana_admin()
-    elif usuario_trab.validar(u, p):
+    elif rol == "empleado":
         mensaje_error.configure(text="")
         abrir_ventana_empleado()
     else:
         mensaje_error.configure(text="Error: Usuario o contraseña incorrectos")
+
 
 # Título principal 
 titulo = ctk.CTkLabel(ventana, text="LOGIN AL SISTEMA", font=("Arial", 20, "bold"))
