@@ -104,5 +104,21 @@ def actualizar_registro(fecha, d_pulg, d_gls, d_ven, r_pulg, r_gls, r_ven, s_pul
         if bd_conexion:
             bd_conexion.close()
 
-    
-
+#obtenemos registros
+def obtener_todos_los_registros():
+    """Obtiene el historial completo ordenado por fecha de más reciente a más antigua"""
+    bd_conexion = conexion()
+    if bd_conexion is None:
+        return []
+    try:
+        cursor = bd_conexion.cursor()
+        cursor.execute("SELECT * FROM registros_medidas ORDER BY fecha DESC;")
+        return cursor.fetchall()
+    except Exception as e:
+        print(f"Error obteniendo historial: {e}")
+        return []
+    finally:
+        if 'cursor' in locals() and cursor:
+            cursor.close()
+        if bd_conexion:
+            bd_conexion.close()            

@@ -4,6 +4,7 @@ import calculo_T
 import psycopg2
 import os
 from dotenv import load_dotenv
+from tkinter import ttk
 
 load_dotenv()
 
@@ -305,6 +306,41 @@ def menu_editar_medidas(pestana_editar):
     boton_guardar = ctk.CTkButton(pestana_editar, text="GUARDAR CAMBIOS", fg_color="green", hover_color="darkgreen", command=guardar_cambios)
     mensaje_editar.grid(row=7, column=0, columnspan=4, pady=5)
 
+def menu_ver_historial(pestana_historial):
+    ctk.CTkLabel(pestana_historial, text=" HISTORIAL DE MEDIDAS", font=("Arial", 18, "bold")).pack(pady=10)
+
+    estilo = ttk.Style()
+    estilo.theme_use("default")
+    estilo.configure("Treeview", 
+                     background="#2b2b2b", 
+                     foreground="white", 
+                     rowheight=30, 
+                     fieldbackground="#2b2b2b",
+                     borderwidth=0)
+    estilo.map('Treeview', background=[('selected', '#1f538d')])
+    estilo.configure("Treeview.Heading", background="#1f538d", foreground="white", font=('Arial', 11, 'bold'))
+
+    columnas = ("Fecha", "Diésel (Venta)", "Regular (Venta)", "Súper (Venta)")
+    tabla = ttk.Treeview(pestana_historial, columns=columnas, show="headings", height=10)
+
+    for col in columnas:
+        tabla.heading(col, text=col)
+        tabla.column(col, anchor="center", width=150)
+
+    tabla.pack(pady=10, fill="x", padx=20)
+
+    def refrescar_tabla():
+        for fila in tabla.get_children():
+            tabla.delete(fila)
+            
+        registros = calculo_T.obtener_todos_los_registros()
+        
+        for r in registros:
+            tabla.insert("", "end", values=(r[1], f"{int(r[4] or 0)} gls", f"{int(r[7] or 0)} gls", f"{int(r[10] or 0)} gls"))
+
+    ctk.CTkButton(pestana_historial, text=" Actualizar Historial", command=refrescar_tabla).pack(pady=5)
+
+    refrescar_tabla()
 
 def abrir_ventana_empleado():
     ventana.withdraw() 
@@ -324,6 +360,7 @@ def abrir_ventana_empleado():
     tabs.add("VER HISTORIAL")
 
     menu_ingresar_medidas(tabs.tab("INGRESAR MEDIDA"))
+    menu_ver_historial(tabs.tab("Historial"))
 
 
 def abrir_ventana_admin():
@@ -348,9 +385,9 @@ def abrir_ventana_admin():
     tabs.add("Editar")
     tabs.add("Eliminar")
 
-    # Inyectamos las funciones en sus pestañas
     menu_ingresar_medidas(tabs.tab("Añadir"))
     menu_editar_medidas(tabs.tab("Editar"))
+    menu_ver_historial(tabs.tab("Historial"))
 
 
 # Función para finalizar el programa
