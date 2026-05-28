@@ -121,6 +121,4 @@ def obtener_todos_los_registros():
         if 'cursor' in locals() and cursor:
             cursor.close()
         if bd_conexion:
-            bd_conexion.close()
-    
-
+            bd_conexion.close()            
