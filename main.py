@@ -190,7 +190,7 @@ def menu_buscar_medidas(pestana_buscar):
             cur = conn.cursor()
             cur.execute("""
                 SELECT * FROM registros_medidas 
-                WHERE fecha = %s::date;
+                WHERE fecha = %s;
             """, (fecha,))
             
             registro = cur.fetchone()
