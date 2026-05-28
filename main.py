@@ -1,5 +1,4 @@
 import customtkinter as ctk 
-from usuario import usuario
 import datetime
 import calculo_T
 import psycopg2
@@ -15,46 +14,15 @@ def conexion():
     except Exception as e:
         print(f"Error de conexion: {e}")
         return None
-    
-# aspecto general de la app
+
+# Aspecto general de la app
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
 
-# ventana principal
+# Ventana principal
 ventana = ctk.CTk()
 ventana.geometry("400x350")
 ventana.title("Sistema de Medición de Tanques")
-
-def crear_tabla_si_no_existe():
-    conn = conexion()
-    if conn:
-        try:
-            cursor = conn.cursor()
-            
-            cursor.execute('''
-                CREATE TABLE IF NOT EXISTS registros_medidas (
-                    id SERIAL PRIMARY KEY,
-                    fecha DATE NOT NULL,
-                    diesel_pulg NUMERIC,
-                    diesel_gls NUMERIC,
-                    diesel_venta NUMERIC,
-                    regular_pulg NUMERIC,
-                    regular_gls NUMERIC,
-                    regular_venta NUMERIC,
-                    super_pulg NUMERIC,
-                    super_gls NUMERIC,
-                    super_venta NUMERIC
-                )
-            ''')
-            conn.commit()
-            cursor.close()
-            conn.close()
-        except Exception as e:
-            print(f"Error al crear tabla: {e}")
-
-
-crear_tabla_si_no_existe()
-
 
 def crear_interfaz_cajas(contenedor, fila_inicio):
     """ Función recicladora para generar la cuadrícula de textos de las medidas """
@@ -140,75 +108,51 @@ def menu_ingresar_medidas(pestana_ingreso):
         boton_guardar.grid(row=6, column=0, columnspan=4, pady=20)
 
     def guardar_en_bd():
-        # Lógica de guardado (INSERT) aquí (para que tu botón funcione completamente)
         conn = conexion()
-        if not conn:
-            mensaje_guardado.configure(text="Error de conexión.", text_color="red")
-            return
-        try:
-            cur = conn.cursor()
-            cur.execute("""
-                INSERT INTO registros_medidas (fecha, diesel_pulg, diesel_gls, diesel_venta, regular_pulg, regular_gls, regular_venta, super_pulg, super_gls, super_venta) 
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-            """, (
-                fecha_actual, 
-                float(cajas["d_pulg"].get() or 0), float(cajas["d_gls"].get() or 0), float(cajas["d_ven"].get() or 0),
-                float(cajas["r_pulg"].get() or 0), float(cajas["r_gls"].get() or 0), float(cajas["r_ven"].get() or 0),
-                float(cajas["s_pulg"].get() or 0), float(cajas["s_gls"].get() or 0), float(cajas["s_ven"].get() or 0)
-            ))
-            conn.commit()
-            mensaje_guardado.configure(text="¡Registro Guardado!", text_color="green")
-            boton_guardar.grid_forget()
-        except Exception as e:
-            print("Error al insertar:", e)
-            mensaje_guardado.configure(text="Error (¿El registro de hoy ya existe?)", text_color="red")
-        finally:
-            if conn: conn.close()
-
-    boton_calcular = ctk.CTkButton(pestana_ingreso, text="CALCULAR MEDIDA", command=ejecutar_calculo)
-    boton_calcular.grid(row=5, column=0, columnspan=4, pady=20)
-
-    mensaje_guardado = ctk.CTkLabel(pestana_ingreso, text="", font=("Arial", 12))
-    mensaje_guardado.grid(row=7, column=0, columnspan=4, pady=5)
-
-    def guardar_en_bd():
-        conn = conexion()
+        cursor = None
         if not conn:
             mensaje_guardado.configure(text="Error de conexión a BD", text_color="red")
             return
             
         try:
             cursor = conn.cursor()
+
+            # --- COMPROBACIÓN (Recuperado de rama 'datos'): Evita duplicar el día ---
+            consulta_verificar = "SELECT id FROM registros_medidas WHERE fecha = %s LIMIT 1"
+            cursor.execute(consulta_verificar, (fecha_actual,))
+            registro_existente = cursor.fetchone()
+
+            if registro_existente:
+                mensaje_guardado.configure(text="Ya existe un registro con la fecha de hoy", text_color="orange")
+                return
+            # -------------------------------------------------------------------------
+
             consulta = """
-                INSERT INTO registros_medidas 
-                (fecha, diesel_pulg, diesel_gls, diesel_venta, 
-                 regular_pulg, regular_gls, regular_venta, 
-                 super_pulg, super_gls, super_venta) 
+                INSERT INTO registros_medidas (fecha, diesel_pulg, diesel_gls, diesel_venta, regular_pulg, regular_gls, regular_venta, super_pulg, super_gls, super_venta) 
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """
             
-            def obtener_valor(entrada):
-                val = entrada.get().strip()
-                return float(val) if val else 0.0
-
             valores = (
-                fecha_actual,
-                obtener_valor(entrada_diesel_pulg), obtener_valor(entrada_diesel_gls), obtener_valor(entrada_diesel_venta),
-                obtener_valor(entrada_regular_pulg), obtener_valor(entrada_regular_gls), obtener_valor(entrada_regular_venta),
-                obtener_valor(entrada_super_pulg), obtener_valor(entrada_super_gls), obtener_valor(entrada_super_venta)
+                fecha_actual, 
+                float(cajas["d_pulg"].get() or 0), float(cajas["d_gls"].get() or 0), float(cajas["d_ven"].get() or 0),
+                float(cajas["r_pulg"].get() or 0), float(cajas["r_gls"].get() or 0), float(cajas["r_ven"].get() or 0),
+                float(cajas["s_pulg"].get() or 0), float(cajas["s_gls"].get() or 0), float(cajas["s_ven"].get() or 0)
             )
             
             cursor.execute(consulta, valores)
             conn.commit()
-            cursor.close()
-            conn.close()
-            
             mensaje_guardado.configure(text="¡Registro guardado exitosamente!", text_color="green")
+            boton_guardar.grid_forget()
             
         except Exception as e:
             print(f"Error al guardar en BD: {e}")
             mensaje_guardado.configure(text="Error al guardar el registro", text_color="red")
+        finally:
+            if cursor: cursor.close()
+            if conn: conn.close()
 
+    boton_calcular = ctk.CTkButton(pestana_ingreso, text="CALCULAR MEDIDA", command=ejecutar_calculo)
+    boton_calcular.grid(row=5, column=0, columnspan=4, pady=20)
     
     boton_guardar = ctk.CTkButton(pestana_ingreso, text="GUARDAR REGISTRO", fg_color="green", hover_color="darkgreen", command=guardar_en_bd)
 
@@ -240,22 +184,23 @@ def menu_editar_medidas(pestana_editar):
             mensaje_editar.configure(text="Por favor ingresa una fecha.", text_color="red")
             return
             
-        registro = calculo_T.obtener_registro_por_fecha(fecha)
-        if registro:
+        registro = calculo_T.buscar_por_fecha(fecha) # Usamos la función que pusimos en calculo_T
+        if registro and len(registro) > 0:
+            fila = registro[0] # Tomamos la primera fila encontrada
             mensaje_editar.configure(text="Registro encontrado. Modifica las pulgadas y recalcula.", text_color="green")
             
-            # Suponiendo que el orden de BD es: id, fecha, d_pulg, d_gls, d_ven, r_pulg, r_gls...
-            llenar_caja(cajas["d_pulg"], registro[2])
-            llenar_caja(cajas["d_gls"], registro[3], True)
-            llenar_caja(cajas["d_ven"], registro[4], True)
+            # Orden de BD: id (0), fecha (1), d_pulg (2), d_gls (3), d_ven (4)...
+            llenar_caja(cajas["d_pulg"], fila[2])
+            llenar_caja(cajas["d_gls"], fila[3], True)
+            llenar_caja(cajas["d_ven"], fila[4], True)
             
-            llenar_caja(cajas["r_pulg"], registro[5])
-            llenar_caja(cajas["r_gls"], registro[6], True)
-            llenar_caja(cajas["r_ven"], registro[7], True)
+            llenar_caja(cajas["r_pulg"], fila[5])
+            llenar_caja(cajas["r_gls"], fila[6], True)
+            llenar_caja(cajas["r_ven"], fila[7], True)
             
-            llenar_caja(cajas["s_pulg"], registro[8])
-            llenar_caja(cajas["s_gls"], registro[9], True)
-            llenar_caja(cajas["s_ven"], registro[10], True)
+            llenar_caja(cajas["s_pulg"], fila[8])
+            llenar_caja(cajas["s_gls"], fila[9], True)
+            llenar_caja(cajas["s_ven"], fila[10], True)
             
             boton_calcular.grid(row=5, column=0, columnspan=4, pady=10)
             boton_guardar.grid_forget()
@@ -286,6 +231,7 @@ def menu_editar_medidas(pestana_editar):
     # 4. Actualizar Base de Datos (UPDATE)
     def guardar_cambios():
         fecha = entrada_fecha.get().strip()
+        # NOTA: Debemos asegurar que calculo_T.actualizar_registro exista en calculo_T.py
         exito = calculo_T.actualizar_registro(
             fecha,
             float(cajas["d_pulg"].get() or 0), float(cajas["d_gls"].get() or 0), float(cajas["d_ven"].get() or 0),
@@ -330,7 +276,7 @@ def abrir_ventana_admin():
     ventana_admin.geometry("800x500")
     ventana_admin.title("Panel de Administrador")
 
-    ventana_admin.protocol("WM_DELETE_WINDOW",cerrar_programa)
+    ventana_admin.protocol("WM_DELETE_WINDOW", cerrar_programa)
     
     ctk.CTkLabel(ventana_admin, text="⚙️ ADMINISTRADOR", font=("Arial", 20, "bold")).pack(pady=10)
     
@@ -349,7 +295,7 @@ def abrir_ventana_admin():
     menu_editar_medidas(tabs.tab("Editar"))
 
 
-# funcion para finalizar el programa
+# Función para finalizar el programa
 def cerrar_programa():
     ventana.quit()
     ventana.destroy()
@@ -360,32 +306,32 @@ def intentar_login():
     
     print(f"Intentando entrar con -> Usuario: '{u}' | Password: '{p}'")
     
-    usuario_admin = usuario("admin", "1234")
-    usuario_trab = usuario("gas", "5678")
+    # Conexión real a la BD que trabajamos antes
+    rol = calculo_T.verificar_login(u, p)
     
-    # Validar
-    if usuario_admin.validar(u, p):
+    if rol == "admin":
         mensaje_error.configure(text="")
         abrir_ventana_admin()
-    elif usuario_trab.validar(u, p):
+    elif rol == "empleado":
         mensaje_error.configure(text="")
         abrir_ventana_empleado()
     else:
         mensaje_error.configure(text="Error: Usuario o contraseña incorrectos")
 
-# titulo principal 
-titulo = ctk.CTkLabel(ventana, text="LOGIN AL SISTEMA", font=("Arial",20,"bold"))
+
+# Título principal 
+titulo = ctk.CTkLabel(ventana, text="LOGIN AL SISTEMA", font=("Arial", 20, "bold"))
 titulo.pack(pady=20)
 
-# usuario
+# Usuario
 entrada_usuario = ctk.CTkEntry(ventana, placeholder_text="usuario", width=200)
 entrada_usuario.pack(pady=10)
 
-# contraseña
+# Contraseña
 entrada_password = ctk.CTkEntry(ventana, placeholder_text="contraseña", show="*", width=200)
 entrada_password.pack(pady=10)
 
-# boton ingresar
+# Botón ingresar
 boton_entrar = ctk.CTkButton(ventana, text="Ingresar", command=intentar_login)
 boton_entrar.pack(pady=20)
 
@@ -393,6 +339,3 @@ mensaje_error = ctk.CTkLabel(ventana, text="", text_color="red")
 mensaje_error.pack(pady=5)
 
 ventana.mainloop()
-
-
-
