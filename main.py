@@ -243,12 +243,13 @@ def menu_editar_medidas(pestana_editar):
             mensaje_editar.configure(text="Por favor ingresa una fecha.", text_color="red")
             return
             
-        registro = calculo_T.buscar_por_fecha(fecha) # Usamos la función que pusimos en calculo_T
-        if registro and len(registro) > 0:
-            fila = registro[0] # Tomamos la primera fila encontrada
+        registro = calculo_T.obtener_registro_por_fecha(fecha) 
+        
+        if registro:
+            fila = registro 
             mensaje_editar.configure(text="Registro encontrado. Modifica las pulgadas y recalcula.", text_color="green")
             
-            # Orden de BD: id (0), fecha (1), d_pulg (2), d_gls (3), d_ven (4)...
+            
             llenar_caja(cajas["d_pulg"], fila[2])
             llenar_caja(cajas["d_gls"], fila[3], True)
             llenar_caja(cajas["d_ven"], fila[4], True)
@@ -360,8 +361,7 @@ def abrir_ventana_empleado():
     tabs.add("VER HISTORIAL")
 
     menu_ingresar_medidas(tabs.tab("INGRESAR MEDIDA"))
-    menu_ver_historial(tabs.tab("Historial"))
-
+    menu_ver_historial(tabs.tab("VER HISTORIAL"))
 
 def abrir_ventana_admin():
     ventana.withdraw() 
@@ -381,13 +381,14 @@ def abrir_ventana_admin():
     tabs.add("Añadir")
     tabs.add("Historial")
     tabs.add("Buscar")
-    menu_buscar_medidas(tabs.tab("Buscar"))
     tabs.add("Editar")
     tabs.add("Eliminar")
 
     menu_ingresar_medidas(tabs.tab("Añadir"))
-    menu_editar_medidas(tabs.tab("Editar"))
     menu_ver_historial(tabs.tab("Historial"))
+    menu_buscar_medidas(tabs.tab("Buscar"))
+    menu_editar_medidas(tabs.tab("Editar"))
+    
 
 
 # Función para finalizar el programa
