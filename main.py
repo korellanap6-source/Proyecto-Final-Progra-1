@@ -1,5 +1,4 @@
 import customtkinter as ctk 
-from usuario import usuario
 import datetime
 import calculo_T
 import psycopg2
@@ -15,16 +14,15 @@ def conexion():
     except Exception as e:
         print(f"Error de conexion: {e}")
         return None
-    
-# aspecto general de la app
+
+# Aspecto general de la app
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
 
-# ventana principal
+# Ventana principal
 ventana = ctk.CTk()
 ventana.geometry("400x350")
 ventana.title("Sistema de Medición de Tanques")
-
 
 def crear_interfaz_cajas(contenedor, fila_inicio):
     """ Función recicladora para generar la cuadrícula de textos de las medidas """
@@ -110,29 +108,47 @@ def menu_ingresar_medidas(pestana_ingreso):
         boton_guardar.grid(row=6, column=0, columnspan=4, pady=20)
 
     def guardar_en_bd():
-        # Lógica de guardado (INSERT) aquí (para que tu botón funcione completamente)
         conn = conexion()
+        cursor = None
         if not conn:
-            mensaje_guardado.configure(text="Error de conexión.", text_color="red")
+            mensaje_guardado.configure(text="Error de conexión a BD", text_color="red")
             return
+            
         try:
-            cur = conn.cursor()
-            cur.execute("""
+            cursor = conn.cursor()
+
+            # --- COMPROBACIÓN (Recuperado de rama 'datos'): Evita duplicar el día ---
+            consulta_verificar = "SELECT id FROM registros_medidas WHERE fecha = %s LIMIT 1"
+            cursor.execute(consulta_verificar, (fecha_actual,))
+            registro_existente = cursor.fetchone()
+
+            if registro_existente:
+                mensaje_guardado.configure(text="Ya existe un registro con la fecha de hoy", text_color="orange")
+                return
+            # -------------------------------------------------------------------------
+
+            consulta = """
                 INSERT INTO registros_medidas (fecha, diesel_pulg, diesel_gls, diesel_venta, regular_pulg, regular_gls, regular_venta, super_pulg, super_gls, super_venta) 
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-            """, (
+            """
+            
+            valores = (
                 fecha_actual, 
                 float(cajas["d_pulg"].get() or 0), float(cajas["d_gls"].get() or 0), float(cajas["d_ven"].get() or 0),
                 float(cajas["r_pulg"].get() or 0), float(cajas["r_gls"].get() or 0), float(cajas["r_ven"].get() or 0),
                 float(cajas["s_pulg"].get() or 0), float(cajas["s_gls"].get() or 0), float(cajas["s_ven"].get() or 0)
-            ))
+            )
+            
+            cursor.execute(consulta, valores)
             conn.commit()
-            mensaje_guardado.configure(text="¡Registro Guardado!", text_color="green")
+            mensaje_guardado.configure(text="¡Registro guardado exitosamente!", text_color="green")
             boton_guardar.grid_forget()
+            
         except Exception as e:
-            print("Error al insertar:", e)
-            mensaje_guardado.configure(text="Error (¿El registro de hoy ya existe?)", text_color="red")
+            print(f"Error al guardar en BD: {e}")
+            mensaje_guardado.configure(text="Error al guardar el registro", text_color="red")
         finally:
+            if cursor: cursor.close()
             if conn: conn.close()
 
     boton_calcular = ctk.CTkButton(pestana_ingreso, text="CALCULAR MEDIDA", command=ejecutar_calculo)
@@ -226,22 +242,23 @@ def menu_editar_medidas(pestana_editar):
             mensaje_editar.configure(text="Por favor ingresa una fecha.", text_color="red")
             return
             
-        registro = calculo_T.obtener_registro_por_fecha(fecha)
-        if registro:
+        registro = calculo_T.buscar_por_fecha(fecha) # Usamos la función que pusimos en calculo_T
+        if registro and len(registro) > 0:
+            fila = registro[0] # Tomamos la primera fila encontrada
             mensaje_editar.configure(text="Registro encontrado. Modifica las pulgadas y recalcula.", text_color="green")
             
-            # Suponiendo que el orden de BD es: id, fecha, d_pulg, d_gls, d_ven, r_pulg, r_gls...
-            llenar_caja(cajas["d_pulg"], registro[2])
-            llenar_caja(cajas["d_gls"], registro[3], True)
-            llenar_caja(cajas["d_ven"], registro[4], True)
+            # Orden de BD: id (0), fecha (1), d_pulg (2), d_gls (3), d_ven (4)...
+            llenar_caja(cajas["d_pulg"], fila[2])
+            llenar_caja(cajas["d_gls"], fila[3], True)
+            llenar_caja(cajas["d_ven"], fila[4], True)
             
-            llenar_caja(cajas["r_pulg"], registro[5])
-            llenar_caja(cajas["r_gls"], registro[6], True)
-            llenar_caja(cajas["r_ven"], registro[7], True)
+            llenar_caja(cajas["r_pulg"], fila[5])
+            llenar_caja(cajas["r_gls"], fila[6], True)
+            llenar_caja(cajas["r_ven"], fila[7], True)
             
-            llenar_caja(cajas["s_pulg"], registro[8])
-            llenar_caja(cajas["s_gls"], registro[9], True)
-            llenar_caja(cajas["s_ven"], registro[10], True)
+            llenar_caja(cajas["s_pulg"], fila[8])
+            llenar_caja(cajas["s_gls"], fila[9], True)
+            llenar_caja(cajas["s_ven"], fila[10], True)
             
             boton_calcular.grid(row=5, column=0, columnspan=4, pady=10)
             boton_guardar.grid_forget()
@@ -316,7 +333,7 @@ def abrir_ventana_admin():
     ventana_admin.geometry("800x500")
     ventana_admin.title("Panel de Administrador")
 
-    ventana_admin.protocol("WM_DELETE_WINDOW",cerrar_programa)
+    ventana_admin.protocol("WM_DELETE_WINDOW", cerrar_programa)
     
     ctk.CTkLabel(ventana_admin, text="⚙️ ADMINISTRADOR", font=("Arial", 20, "bold")).pack(pady=10)
     
@@ -336,7 +353,7 @@ def abrir_ventana_admin():
     menu_editar_medidas(tabs.tab("Editar"))
 
 
-# funcion para finalizar el programa
+# Función para finalizar el programa
 def cerrar_programa():
     ventana.quit()
     ventana.destroy()
@@ -392,7 +409,3 @@ mensaje_error = ctk.CTkLabel(ventana, text="", text_color="red")
 mensaje_error.pack(pady=5)
 
 ventana.mainloop()
-
-
-
-

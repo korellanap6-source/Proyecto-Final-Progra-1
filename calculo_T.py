@@ -93,6 +93,7 @@ def actualizar_registro(fecha, d_pulg, d_gls, d_ven, r_pulg, r_gls, r_ven, s_pul
         valores = (d_pulg, d_gls, d_ven, r_pulg, r_gls, r_ven, s_pulg, s_gls, s_ven, fecha)
         cursor.execute(consulta, valores)
         bd_conexion.commit()
+        # Retorna True si se modificó exitosamente alguna fila
         return cursor.rowcount > 0 
     except Exception as e:
         print(f"Error al actualizar registro: {e}")
@@ -102,5 +103,6 @@ def actualizar_registro(fecha, d_pulg, d_gls, d_ven, r_pulg, r_gls, r_ven, s_pul
             cursor.close()
         if bd_conexion:
             bd_conexion.close()
+
     
 
