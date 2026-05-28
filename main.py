@@ -156,6 +156,64 @@ def menu_ingresar_medidas(pestana_ingreso):
     
     boton_guardar = ctk.CTkButton(pestana_ingreso, text="GUARDAR REGISTRO", fg_color="green", hover_color="darkgreen", command=guardar_en_bd)
 
+def menu_buscar_medidas(pestana_buscar):
+    import datetime
+    
+    ctk.CTkLabel(pestana_buscar, text="Buscar Registro por Fecha", font=("Arial", 16, "bold")).pack(pady=10)
+
+    entrada_fecha = ctk.CTkEntry(pestana_buscar, placeholder_text="YYYY-MM-DD", width=150)
+    entrada_fecha.pack(pady=10)
+
+    resultado_label = ctk.CTkLabel(pestana_buscar, text="", font=("Arial", 12))
+    resultado_label.pack(pady=10)
+
+    def buscar():
+        fecha = entrada_fecha.get().strip()
+
+        if not fecha:
+            resultado_label.configure(text="Ingresa una fecha", text_color="red")
+            return
+
+        try:
+            datetime.datetime.strptime(fecha, "%Y-%m-%d")
+        except ValueError:
+            resultado_label.configure(text="Formato inválido (YYYY-MM-DD)", text_color="red")
+            return
+
+        conn = conexion()
+        if not conn:
+            resultado_label.configure(text="Error de conexión a Neon", text_color="red")
+            return
+
+        try:
+            cur = conn.cursor()
+            cur.execute("""
+                SELECT * FROM registros_medidas 
+                WHERE fecha = %s::date;
+            """, (fecha,))
+            
+            registro = cur.fetchone()
+
+            if registro:
+                texto = f"""
+Fecha: {registro[1]}
+
+DIESEL → Pulg: {registro[2]} | GLS: {registro[3]} | Venta: {registro[4]}
+REGULAR → Pulg: {registro[5]} | GLS: {registro[6]} | Venta: {registro[7]}
+SUPER → Pulg: {registro[8]} | GLS: {registro[9]} | Venta: {registro[10]}
+"""
+                resultado_label.configure(text=texto, text_color="green")
+            else:
+                resultado_label.configure(text="No existe registro para esa fecha", text_color="red")
+
+        except Exception as e:
+            print(e)
+            resultado_label.configure(text="Error al consultar Neon", text_color="red")
+        finally:
+            conn.close()
+
+    boton_buscar = ctk.CTkButton(pestana_buscar, text="BUSCAR", command=buscar)
+    boton_buscar.pack(pady=10)
 
 def menu_editar_medidas(pestana_editar):
     # 1. Buscador Superior
@@ -231,7 +289,6 @@ def menu_editar_medidas(pestana_editar):
     # 4. Actualizar Base de Datos (UPDATE)
     def guardar_cambios():
         fecha = entrada_fecha.get().strip()
-        # NOTA: Debemos asegurar que calculo_T.actualizar_registro exista en calculo_T.py
         exito = calculo_T.actualizar_registro(
             fecha,
             float(cajas["d_pulg"].get() or 0), float(cajas["d_gls"].get() or 0), float(cajas["d_ven"].get() or 0),
@@ -287,6 +344,7 @@ def abrir_ventana_admin():
     tabs.add("Añadir")
     tabs.add("Historial")
     tabs.add("Buscar")
+    menu_buscar_medidas(tabs.tab("Buscar"))
     tabs.add("Editar")
     tabs.add("Eliminar")
 
@@ -303,35 +361,47 @@ def cerrar_programa():
 def intentar_login():
     u = entrada_usuario.get().strip()
     p = entrada_password.get().strip()
-    
-    print(f"Intentando entrar con -> Usuario: '{u}' | Password: '{p}'")
-    
-    # Conexión real a la BD que trabajamos antes
-    rol = calculo_T.verificar_login(u, p)
-    
-    if rol == "admin":
-        mensaje_error.configure(text="")
-        abrir_ventana_admin()
-    elif rol == "empleado":
-        mensaje_error.configure(text="")
-        abrir_ventana_empleado()
-    else:
-        mensaje_error.configure(text="Error: Usuario o contraseña incorrectos")
 
+    try:
+        conn = conexion()
+        cur = conn.cursor()
 
-# Título principal 
-titulo = ctk.CTkLabel(ventana, text="LOGIN AL SISTEMA", font=("Arial", 20, "bold"))
+        cur.execute("""
+            SELECT rol FROM usuarios
+            WHERE username = %s AND password = %s
+        """, (u, p))
+
+        resultado = cur.fetchone()
+
+        if resultado:
+            rol = resultado[0]
+            mensaje_error.configure(text="")
+
+            if rol == "admin":
+                abrir_ventana_admin()
+            else:
+                abrir_ventana_empleado()
+        else:
+            mensaje_error.configure(text="Usuario o contraseña incorrectos")
+
+        conn.close()
+
+    except:
+        mensaje_error.configure(text="Error al validar usuario")
+
+# titulo principal 
+titulo = ctk.CTkLabel(ventana, text="LOGIN AL SISTEMA", font=("Arial",20,"bold"))
 titulo.pack(pady=20)
 
-# Usuario
+# usuario
 entrada_usuario = ctk.CTkEntry(ventana, placeholder_text="usuario", width=200)
 entrada_usuario.pack(pady=10)
 
-# Contraseña
+# contraseña
 entrada_password = ctk.CTkEntry(ventana, placeholder_text="contraseña", show="*", width=200)
 entrada_password.pack(pady=10)
 
-# Botón ingresar
+# boton ingresar
 boton_entrar = ctk.CTkButton(ventana, text="Ingresar", command=intentar_login)
 boton_entrar.pack(pady=20)
 
