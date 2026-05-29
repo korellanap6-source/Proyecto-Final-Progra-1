@@ -2,6 +2,16 @@
 
 Este sistema fue diseñado para facilitar la gestión, el cálculo y el almacenamiento del inventario diario de combustible (Diésel, Regular y Súper) en una estación de servicio. La aplicación automatiza la conversión de medidas físicas (pulgadas) a galones y mantiene un registro histórico centralizado y seguro.
 
+# Requisitos Previos (Instalación)
+
+Antes de ejecutar el sistema por primera vez, es indispensable instalar los complementos de interfaz gráfica, conexión a base de datos y variables de entorno. 
+
+Abra su terminal o línea de comandos y ejecute el siguiente comando:
+
+pip install customtkinter psycopg2 python-dotenv
+
+Adicional a esto tambien es necesario que cree un archivo llamado .env, en el cual se va a colocar la conexion a la base de datos, ya sea local o en la nube (no se agrego al repositorio por temas de seguridad de informacion)
+
 # Perfiles de Acceso
 
 Para proteger los datos, el sistema cuenta con dos niveles de acceso:
@@ -17,7 +27,7 @@ Asegúrese de estar ubicado en la carpeta del proyecto. Abra su terminal o líne
 
 python main.py
 
-"El programa requiere conexion a internet ya que el sistema guarda la información de forma segura en la nube"
+**"El programa requiere conexion a internet ya que el sistema guarda la información de forma segura en la nube"**
 
 ## 2. Inicio de Sesión
 
