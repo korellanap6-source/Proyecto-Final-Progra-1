@@ -149,62 +149,72 @@ def menu_ingresar_medidas(pestana_ingreso):
 
 def menu_buscar_medidas(pestana_buscar):
     import datetime
-    
-    ctk.CTkLabel(pestana_buscar, text="Buscar Registro por Fecha", font=("Arial", 16, "bold")).pack(pady=10)
 
-    entrada_fecha = ctk.CTkEntry(pestana_buscar, placeholder_text="YYYY-MM-DD", width=150)
-    entrada_fecha.pack(pady=10)
+    # 1. Creamos un marco superior para el buscador, igual que en la pestaña "Editar"
+    marco_buscador = ctk.CTkFrame(pestana_buscar)
+    marco_buscador.grid(row=0, column=0, columnspan=4, pady=10, padx=20, sticky="w")
 
-    resultado_label = ctk.CTkLabel(pestana_buscar, text="", font=("Arial", 12))
-    resultado_label.pack(pady=10)
+    ctk.CTkLabel(marco_buscador, text="Buscar Fecha (YYYY-MM-DD):", font=("Arial", 13, "bold")).grid(row=0, column=0, padx=10, pady=5)
+    entrada_fecha = ctk.CTkEntry(marco_buscador, placeholder_text="Ej. 2023-10-25", width=120)
+    entrada_fecha.grid(row=0, column=1, padx=10, pady=5)
+
+    # 2. Reutilizamos tu función para crear las cajas de texto gráficamente
+    cajas = crear_interfaz_cajas(pestana_buscar, 1)
+
+    # Etiqueta para mensajes de error o éxito
+    mensaje_buscar = ctk.CTkLabel(pestana_buscar, text="", font=("Arial", 12))
+    mensaje_buscar.grid(row=6, column=0, columnspan=4, pady=10)
+
+    def llenar_caja(caja, valor):
+        """Función auxiliar para llenar las cajas y obligarlas a quedar en modo lectura"""
+        caja.configure(state="normal")
+        caja.delete(0, 'end')
+        caja.insert(0, str(valor) if valor is not None else "0")
+        caja.configure(state="readonly")  # Las bloqueamos para que el usuario no edite aquí
 
     def buscar():
         fecha = entrada_fecha.get().strip()
 
         if not fecha:
-            resultado_label.configure(text="Ingresa una fecha", text_color="red")
+            mensaje_buscar.configure(text="Ingresa una fecha", text_color="red")
             return
 
         try:
             datetime.datetime.strptime(fecha, "%Y-%m-%d")
         except ValueError:
-            resultado_label.configure(text="Formato inválido (YYYY-MM-DD)", text_color="red")
+            mensaje_buscar.configure(text="Formato inválido (YYYY-MM-DD)", text_color="red")
             return
 
-        conn = conexion()
-        if not conn:
-            resultado_label.configure(text="Error de conexión a Neon", text_color="red")
-            return
+        # 3. Aprovechamos la función de 'calculo_T' para mantener el código más limpio
+        registro = calculo_T.obtener_registro_por_fecha(fecha)
 
-        try:
-            cur = conn.cursor()
-            cur.execute("""
-                SELECT * FROM registros_medidas 
-                WHERE fecha = %s;
-            """, (fecha,))
+        if registro:
+            mensaje_buscar.configure(text="¡Registro encontrado exitosamente!", text_color="green")
+
+            # Llenamos las cajas gráficas según el índice de la base de datos
+            # DIESEL
+            llenar_caja(cajas["d_pulg"], registro[2])
+            llenar_caja(cajas["d_gls"], registro[3])
+            llenar_caja(cajas["d_ven"], registro[4])
             
-            registro = cur.fetchone()
+            # REGULAR
+            llenar_caja(cajas["r_pulg"], registro[5])
+            llenar_caja(cajas["r_gls"], registro[6])
+            llenar_caja(cajas["r_ven"], registro[7])
+            
+            # SÚPER
+            llenar_caja(cajas["s_pulg"], registro[8])
+            llenar_caja(cajas["s_gls"], registro[9])
+            llenar_caja(cajas["s_ven"], registro[10])
+        else:
+            mensaje_buscar.configure(text="No existe registro para esa fecha", text_color="red")
+            
+            # Si no se encuentra nada, devolvemos las cajas a "0"
+            for clave in cajas:
+                llenar_caja(cajas[clave], "0")
 
-            if registro:
-                texto = f"""
-Fecha: {registro[1]}
-
-DIESEL → Pulg: {registro[2]} | GLS: {registro[3]} | Venta: {registro[4]}
-REGULAR → Pulg: {registro[5]} | GLS: {registro[6]} | Venta: {registro[7]}
-SUPER → Pulg: {registro[8]} | GLS: {registro[9]} | Venta: {registro[10]}
-"""
-                resultado_label.configure(text=texto, text_color="green")
-            else:
-                resultado_label.configure(text="No existe registro para esa fecha", text_color="red")
-
-        except Exception as e:
-            print(e)
-            resultado_label.configure(text="Error al consultar Neon", text_color="red")
-        finally:
-            conn.close()
-
-    boton_buscar = ctk.CTkButton(pestana_buscar, text="BUSCAR", command=buscar)
-    boton_buscar.pack(pady=10)
+    boton_buscar = ctk.CTkButton(marco_buscador, text="BUSCAR", command=buscar)
+    boton_buscar.grid(row=0, column=2, padx=10, pady=5)
 
 def menu_editar_medidas(pestana_editar):
     marco_buscador = ctk.CTkFrame(pestana_editar)
