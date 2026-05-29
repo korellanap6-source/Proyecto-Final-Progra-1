@@ -16,24 +16,20 @@ def conexion():
         print(f"Error de conexion: {e}")
         return None
 
-# Aspecto general de la app
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
 
-# Ventana principal
 ventana = ctk.CTk()
 ventana.geometry("400x350")
 ventana.title("Sistema de Medición de Tanques")
 
 def crear_interfaz_cajas(contenedor, fila_inicio):
     """ Función recicladora para generar la cuadrícula de textos de las medidas """
-    # encabezados de columnas
     ctk.CTkLabel(contenedor, text="Combustible", font=("Arial", 14, "bold")).grid(row=fila_inicio, column=0, padx=20, pady=10)
     ctk.CTkLabel(contenedor, text="Pulgadas (PULG)", font=("Arial", 14, "bold")).grid(row=fila_inicio, column=1, padx=20, pady=10)
     ctk.CTkLabel(contenedor, text="Galones (GLS)", font=("arial", 14, "bold")).grid(row=fila_inicio, column=2, padx=20, pady=10)
     ctk.CTkLabel(contenedor, text="Galones Disponibles (Venta)", font=("arial", 14, "bold")).grid(row=fila_inicio, column=3, padx=20, pady=10)
     
-    # FILA DIESEL
     ctk.CTkLabel(contenedor, text="⛽ DIESEL:", font=("Arial", 14)).grid(row=fila_inicio+1, column=0, padx=20, pady=10, sticky="w")
     entrada_diesel_pulg = ctk.CTkEntry(contenedor, placeholder_text="0", width=100)
     entrada_diesel_pulg.grid(row=fila_inicio+1, column=1, padx=20, pady=10)
@@ -42,7 +38,6 @@ def crear_interfaz_cajas(contenedor, fila_inicio):
     entrada_diesel_venta = ctk.CTkEntry(contenedor, placeholder_text="0", width=100, state="readonly")
     entrada_diesel_venta.grid(row=fila_inicio+1, column=3, padx=20, pady=10)
     
-    # FILA REGULAR
     ctk.CTkLabel(contenedor, text="⛽ REGULAR:", font=("Arial", 14)).grid(row=fila_inicio+2, column=0, padx=20, pady=10, sticky="w")
     entrada_regular_pulg = ctk.CTkEntry(contenedor, placeholder_text="0", width=100)
     entrada_regular_pulg.grid(row=fila_inicio+2, column=1, padx=20, pady=10)
@@ -51,7 +46,6 @@ def crear_interfaz_cajas(contenedor, fila_inicio):
     entrada_regular_venta = ctk.CTkEntry(contenedor, placeholder_text="0", width=100, state="readonly")
     entrada_regular_venta.grid(row=fila_inicio+2, column=3, padx=20, pady=10)
 
-    # FILA SÚPER
     ctk.CTkLabel(contenedor, text="⛽ SÚPER:", font=("Arial", 14)).grid(row=fila_inicio+3, column=0, padx=20, pady=10, sticky="w")
     entrada_super_pulg = ctk.CTkEntry(contenedor, placeholder_text="0", width=100)
     entrada_super_pulg.grid(row=fila_inicio+3, column=1, padx=20, pady=10)
@@ -76,7 +70,6 @@ def menu_ingresar_medidas(pestana_ingreso):
         font=("Arial", 13, "italic"), text_color="gray"
     ).grid(row=0, column=0, columnspan=4, pady=10, sticky="w", padx=20)
 
-    # Llamamos a la función para pintar las cajas en la fila 1
     cajas = crear_interfaz_cajas(pestana_ingreso, 1)
 
     mensaje_guardado = ctk.CTkLabel(pestana_ingreso, text="", font=("Arial", 12))
@@ -118,7 +111,6 @@ def menu_ingresar_medidas(pestana_ingreso):
         try:
             cursor = conn.cursor()
 
-            # --- COMPROBACIÓN (Recuperado de rama 'datos'): Evita duplicar el día ---
             consulta_verificar = "SELECT id FROM registros_medidas WHERE fecha = %s LIMIT 1"
             cursor.execute(consulta_verificar, (fecha_actual,))
             registro_existente = cursor.fetchone()
@@ -126,8 +118,6 @@ def menu_ingresar_medidas(pestana_ingreso):
             if registro_existente:
                 mensaje_guardado.configure(text="Ya existe un registro con la fecha de hoy", text_color="orange")
                 return
-            # -------------------------------------------------------------------------
-
             consulta = """
                 INSERT INTO registros_medidas (fecha, diesel_pulg, diesel_gls, diesel_venta, regular_pulg, regular_gls, regular_venta, super_pulg, super_gls, super_venta) 
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
@@ -217,7 +207,6 @@ SUPER → Pulg: {registro[8]} | GLS: {registro[9]} | Venta: {registro[10]}
     boton_buscar.pack(pady=10)
 
 def menu_editar_medidas(pestana_editar):
-    # 1. Buscador Superior
     marco_buscador = ctk.CTkFrame(pestana_editar)
     marco_buscador.grid(row=0, column=0, columnspan=4, pady=10, padx=20, sticky="w")
     
@@ -227,7 +216,6 @@ def menu_editar_medidas(pestana_editar):
 
     mensaje_editar = ctk.CTkLabel(pestana_editar, text="", font=("Arial", 12))
     
-    # 2. Reciclar la interfaz visual en la fila 1
     cajas = crear_interfaz_cajas(pestana_editar, 1)
 
     def llenar_caja(caja, valor, es_lectura=False):
@@ -270,7 +258,6 @@ def menu_editar_medidas(pestana_editar):
     boton_buscar = ctk.CTkButton(marco_buscador, text="Buscar", command=buscar_registro)
     boton_buscar.grid(row=0, column=2, padx=10, pady=5)
 
-    # 3. Recálculo
     def ejecutar_calculo():
         tot_d, ven_d = calculo_T.buscar_medida("DIESEL", cajas["d_pulg"].get().strip() or "0")
         tot_r, ven_r = calculo_T.buscar_medida("REGULAR", cajas["r_pulg"].get().strip() or "0")
@@ -288,7 +275,6 @@ def menu_editar_medidas(pestana_editar):
 
     boton_calcular = ctk.CTkButton(pestana_editar, text="CALCULAR NUEVA MEDIDA", command=ejecutar_calculo)
 
-    # 4. Actualizar Base de Datos (UPDATE)
     def guardar_cambios():
         fecha = entrada_fecha.get().strip()
         exito = calculo_T.actualizar_registro(
@@ -473,7 +459,6 @@ def abrir_ventana_admin():
     
     ctk.CTkLabel(ventana_admin, text="⚙️ ADMINISTRADOR", font=("Arial", 20, "bold")).pack(pady=10)
     
-    # Pestañas del Admin 
     tabs = ctk.CTkTabview(ventana_admin, width=750, height=400)
     tabs.pack(pady=10)
     
@@ -490,7 +475,6 @@ def abrir_ventana_admin():
     menu_eliminar_medidas(tabs.tab("Eliminar"))
 
 
-# Función para finalizar el programa
 def cerrar_programa():
     ventana.quit()
     ventana.destroy()
@@ -526,19 +510,15 @@ def intentar_login():
     except:
         mensaje_error.configure(text="Error al validar usuario")
 
-# titulo principal 
 titulo = ctk.CTkLabel(ventana, text="LOGIN AL SISTEMA", font=("Arial",20,"bold"))
 titulo.pack(pady=20)
 
-# usuario
 entrada_usuario = ctk.CTkEntry(ventana, placeholder_text="usuario", width=200)
 entrada_usuario.pack(pady=10)
 
-# contraseña
 entrada_password = ctk.CTkEntry(ventana, placeholder_text="contraseña", show="*", width=200)
 entrada_password.pack(pady=10)
 
-# boton ingresar
 boton_entrar = ctk.CTkButton(ventana, text="Ingresar", command=intentar_login)
 boton_entrar.pack(pady=20)
 

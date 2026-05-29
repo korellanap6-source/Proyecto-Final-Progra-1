@@ -2,7 +2,6 @@ import psycopg2
 import os
 from dotenv import load_dotenv
 
-# CORRECCIÓN: Faltaban los paréntesis aquí
 load_dotenv()
 
 # establece conexion con la base de datos
@@ -33,7 +32,7 @@ def buscar_medida(combustible, pulgadas):
 
         if resultado:
             galones_totales= int(resultado[0])
-            # Restamos la reserva para saber cuántos se pueden vender
+            # restamos la reserva para saber cuántos se pueden vender
             galones_venta = galones_totales-300
 
             if galones_venta<0:
@@ -45,15 +44,10 @@ def buscar_medida(combustible, pulgadas):
     finally:
         if 'cursor' in locals() and cursor:
             cursor.close()
-        # CORRECCIÓN: Faltaban los paréntesis en close()
         if bd_conexion:
             bd_conexion.close()
             
     return 0,0
-
-# =======================================================
-# NUEVAS FUNCIONES PARA LA PESTAÑA "EDITAR REGISTRO"
-# =======================================================
 
 def obtener_registro_por_fecha(fecha):
     """Busca un registro único en la base de datos basado en la fecha"""
