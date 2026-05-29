@@ -343,6 +343,105 @@ def menu_ver_historial(pestana_historial):
 
     refrescar_tabla()
 
+def menu_eliminar_medidas(pestana_eliminar):
+    ctk.CTkLabel(
+        pestana_eliminar,
+        text="Eliminar Registro por Fecha",
+        font=("Arial", 18, "bold")
+    ).pack(pady=20)
+
+    ctk.CTkLabel(
+        pestana_eliminar,
+        text="Ingrese la fecha del registro que desea eliminar:",
+        font=("Arial", 14)
+    ).pack(pady=10)
+
+    entrada_fecha = ctk.CTkEntry(
+        pestana_eliminar,
+        placeholder_text="YYYY-MM-DD",
+        width=180
+    )
+    entrada_fecha.pack(pady=10)
+
+    mensaje_eliminar = ctk.CTkLabel(
+        pestana_eliminar,
+        text="",
+        font=("Arial", 12)
+    )
+    mensaje_eliminar.pack(pady=10)
+
+    def eliminar_registro():
+        fecha = entrada_fecha.get().strip()
+
+        if not fecha:
+            mensaje_eliminar.configure(
+                text="Debe ingresar una fecha",
+                text_color="red"
+            )
+            return
+
+        try:
+            datetime.datetime.strptime(fecha, "%Y-%m-%d")
+        except ValueError:
+            mensaje_eliminar.configure(
+                text="Formato inválido. Use YYYY-MM-DD",
+                text_color="red"
+            )
+            return
+
+        conn = conexion()
+
+        if not conn:
+            mensaje_eliminar.configure(
+                text="Error de conexión a la base de datos",
+                text_color="red"
+            )
+            return
+
+        try:
+            cur = conn.cursor()
+
+            cur.execute("""
+                DELETE FROM registros_medidas
+                WHERE fecha = %s;
+            """, (fecha,))
+
+            conn.commit()
+
+            if cur.rowcount > 0:
+                mensaje_eliminar.configure(
+                    text=f"Registro de la fecha {fecha} eliminado correctamente",
+                    text_color="green"
+                )
+                entrada_fecha.delete(0, "end")
+            else:
+                mensaje_eliminar.configure(
+                    text="No existe registro con esa fecha",
+                    text_color="orange"
+                )
+
+            cur.close()
+            conn.close()
+
+        except Exception as e:
+            print(e)
+            mensaje_eliminar.configure(
+                text="Error al eliminar el registro",
+                text_color="red"
+            )
+
+            if conn:
+                conn.close()
+
+    boton_eliminar = ctk.CTkButton(
+        pestana_eliminar,
+        text="ELIMINAR REGISTRO",
+        fg_color="red",
+        hover_color="darkred",
+        command=eliminar_registro
+    )
+    boton_eliminar.pack(pady=20)
+
 def abrir_ventana_empleado():
     ventana.withdraw() 
     
@@ -388,7 +487,7 @@ def abrir_ventana_admin():
     menu_ver_historial(tabs.tab("Historial"))
     menu_buscar_medidas(tabs.tab("Buscar"))
     menu_editar_medidas(tabs.tab("Editar"))
-    
+    menu_eliminar_medidas(tabs.tab("Eliminar"))
 
 
 # Función para finalizar el programa
