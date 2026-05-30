@@ -24,6 +24,7 @@ ventana = ctk.CTk()
 ventana.geometry("400x350")
 ventana.title("Sistema de Medición de Tanques")
 
+#funcion para dibujar las tablas
 def crear_interfaz_cajas(contenedor, fila_inicio):
     """ Función recicladora para generar la cuadrícula de textos de las medidas """
     ctk.CTkLabel(contenedor, text="Combustible", font=("Arial", 14, "bold")).grid(row=fila_inicio, column=0, padx=20, pady=10)
@@ -61,7 +62,7 @@ def crear_interfaz_cajas(contenedor, fila_inicio):
         "s_pulg": entrada_super_pulg, "s_gls": entrada_super_gls, "s_ven": entrada_super_venta
     }
 
-
+#Pestaña para ingresar medidas
 def menu_ingresar_medidas(pestana_ingreso): 
     fecha_actual = datetime.date.today().strftime("%Y-%m-%d")
 
@@ -148,10 +149,11 @@ def menu_ingresar_medidas(pestana_ingreso):
     
     boton_guardar = ctk.CTkButton(pestana_ingreso, text="GUARDAR REGISTRO", fg_color="green", hover_color="darkgreen", command=guardar_en_bd)
 
+#funcion para buscar las medidas en la base de datos
 def menu_buscar_medidas(pestana_buscar):
     import datetime
 
-    # 1. Creamos un marco superior para el buscador, igual que en la pestaña "Editar"
+    # Creamos un marco superior para el buscador, igual que en la pestaña "Editar"
     marco_buscador = ctk.CTkFrame(pestana_buscar)
     marco_buscador.grid(row=0, column=0, columnspan=4, pady=10, padx=20, sticky="w")
 
@@ -159,7 +161,7 @@ def menu_buscar_medidas(pestana_buscar):
     entrada_fecha = ctk.CTkEntry(marco_buscador, placeholder_text="Ej. 2023-10-25", width=120)
     entrada_fecha.grid(row=0, column=1, padx=10, pady=5)
 
-    # 2. Reutilizamos tu función para crear las cajas de texto gráficamente
+    # Reutilizamos tu función para crear las cajas de texto gráficamente
     cajas = crear_interfaz_cajas(pestana_buscar, 1)
 
     # Etiqueta para mensajes de error o éxito
@@ -171,7 +173,7 @@ def menu_buscar_medidas(pestana_buscar):
         caja.configure(state="normal")
         caja.delete(0, 'end')
         caja.insert(0, str(valor) if valor is not None else "0")
-        caja.configure(state="readonly")  # Las bloqueamos para que el usuario no edite aquí
+        caja.configure(state="readonly")  # bloqueamos para que el usuario no edite aquí
 
     def buscar():
         fecha = entrada_fecha.get().strip()
@@ -186,7 +188,7 @@ def menu_buscar_medidas(pestana_buscar):
             mensaje_buscar.configure(text="Formato inválido (YYYY-MM-DD)", text_color="red")
             return
 
-        # 3. Aprovechamos la función de 'calculo_T' para mantener el código más limpio
+        #Aprovechamos la función de 'calculo_T' para mantener el código más limpio
         registro = calculo_T.obtener_registro_por_fecha(fecha)
 
         if registro:
@@ -217,6 +219,7 @@ def menu_buscar_medidas(pestana_buscar):
     boton_buscar = ctk.CTkButton(marco_buscador, text="BUSCAR", command=buscar)
     boton_buscar.grid(row=0, column=2, padx=10, pady=5)
 
+#Pestaña para editar medidas en la base de datos
 def menu_editar_medidas(pestana_editar):
     marco_buscador = ctk.CTkFrame(pestana_editar)
     marco_buscador.grid(row=0, column=0, columnspan=4, pady=10, padx=20, sticky="w")
@@ -304,6 +307,7 @@ def menu_editar_medidas(pestana_editar):
     boton_guardar = ctk.CTkButton(pestana_editar, text="GUARDAR CAMBIOS", fg_color="green", hover_color="darkgreen", command=guardar_cambios)
     mensaje_editar.grid(row=7, column=0, columnspan=4, pady=5)
 
+#Funcion para ver el historial de la base de datos
 def menu_ver_historial(pestana_historial):
     ctk.CTkLabel(pestana_historial, text=" HISTORIAL DE MEDIDAS", font=("Arial", 18, "bold")).pack(pady=10)
 
@@ -340,6 +344,7 @@ def menu_ver_historial(pestana_historial):
 
     refrescar_tabla()
 
+#menu para eliminar medidas
 def menu_eliminar_medidas(pestana_eliminar):
     ctk.CTkLabel(
         pestana_eliminar,
@@ -439,6 +444,7 @@ def menu_eliminar_medidas(pestana_eliminar):
     )
     boton_eliminar.pack(pady=20)
 
+#ventana principal para empleado
 def abrir_ventana_empleado():
     ventana.withdraw() 
     
@@ -459,6 +465,7 @@ def abrir_ventana_empleado():
     menu_ingresar_medidas(tabs.tab("INGRESAR MEDIDA"))
     menu_ver_historial(tabs.tab("VER HISTORIAL"))
 
+#ventana principal para el administrador
 def abrir_ventana_admin():
     ventana.withdraw() 
     
@@ -490,6 +497,7 @@ def cerrar_programa():
     ventana.quit()
     ventana.destroy()
 
+#login 
 def intentar_login():
     u = entrada_usuario.get().strip()
     p = entrada_password.get().strip()

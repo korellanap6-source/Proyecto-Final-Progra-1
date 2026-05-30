@@ -38,4 +38,4 @@ VALUES
 ('Luis', '5678', 'empleado'),
 ('Brayan', '1234', 'admin'),
 ('Irvyn', '1234', 'admin'),
-('Erik', '1234', 'admin');
+('Erick', '1234', 'admin');
