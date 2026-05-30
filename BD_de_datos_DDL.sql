@@ -33,6 +33,9 @@ CREATE TABLE IF NOT EXISTS registros_medidas (
 
 INSERT INTO usuarios (username, password, rol) 
 VALUES 
-('admin', '1234', 'admin'), 
-('Kevin', '1234', 'empleado'),
-('Luis', '1234', 'admin')
+('Kevin', '1234', 'admin'),
+('Maria', '5678', 'empleado'), 
+('Luis', '5678', 'empleado'),
+('Brayan', '1234', 'admin'),
+('Irvin', '1234', 'admin'),
+('Eric', '1234', 'admin');
