@@ -8,6 +8,7 @@ from tkinter import ttk
 
 load_dotenv()
 
+#se establece conexion a la base de daots
 def conexion():
     try:
         URL_CONEXION = os.getenv("DATABASE_URL")
