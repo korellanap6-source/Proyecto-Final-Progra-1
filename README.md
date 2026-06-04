@@ -35,13 +35,13 @@ Al ejecutarse el programa, aparecerá la pantalla de acceso. Ingrese una de las 
 
 Para ingresar como Administrador:
 
-Usuario: admin
+Usuario: Admin
 Contraseña: 1234
 
 Para ingresar como Empleado:
 
-Usuario: Kevin
-Contraseña: 1234
+Usuario: Empleado
+Contraseña: 5678
 
 ## 3. Uso de las Herramientas del Sistema
 
